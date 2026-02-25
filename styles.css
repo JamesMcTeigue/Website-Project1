@@ -15,7 +15,7 @@ body {
 /* Light underline under the title */
 .underline {
   width: 200px;
-  height: 2px;
+  height: 2opx;
   background: #c0eb00;
   margin-bottom: 50px;
 }
