@@ -1,13 +1,31 @@
+:root {
+  /* Global / layout */
+  --site-background: rgba(255, 255, 255, 0.625);
+
+  /* Title area */
+  --title-text: #304cd5;
+  --title-underline-bg: #060702;
+
+  /* Button */
+  --button-bg: #0c762c;
+  --button-border: #09e52da4;        /* hex with alpha */
+  --button-text: #000d51;
+
+  /* Button :hover */
+  --button-hover-bg: rgba(29, 2, 237, 0.389);
+  --button-hover-border: rgb(98, 2, 2);
+}
+
 body {
   margin: 0;
   padding: 40px;
   font-family: Arial, sans-serif;
-  background: #fcf8f6;
+  background: var(--site-background);
 }
 
 /* Title */
 .title {
-  color: #304cd5;
+  color: var(--title-text);
   margin-bottom: 4px;
   font-weight: 500;
 }
@@ -16,20 +34,48 @@ body {
 .underline {
   width: 200px;
   height: 20px;
-  background: #060702;
+  background: var(--title-underline-bg);
   margin-bottom: 50px;
 }
+
+/* Your existing underline style */
+.underline {
+  width: 200px;
+  height: 20px;
+  background: var(--title-underline-bg);
+  margin-bottom: 50px;
+}
+
+/* Draggable behavior + starting position (tweak as needed) */
+.underline {
+  position: absolute;
+  left: 40px;     /* initial x */
+  top: 140px;     /* initial y under the title */
+  cursor: grab;
+  user-select: none;
+}
+
+.underline.dragging {
+  cursor: grabbing;
+  opacity: 0.95;
+}
+
+/* Optional: subtle shadow to show movement */
+.underline.falling {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
 
 /* Centered button */
 .main-button {
   display: block;
   margin: 150px auto;
   padding: 20px 80px;
-  background: #0c6f76;
-  border: 2px solid #09e52da4;
+  background: var(--button-bg);
+  border: 2px solid var(--button-border);
   border-radius: 10px;
   font-size: 18px;
-  color: #000d51;
+  color: var(--button-text);
   cursor: pointer;
 
   /* Smooth transition to hover state */
@@ -38,6 +84,6 @@ body {
 
 /* Hover effect */
 .main-button:hover {
-  background: rgb(237, 2, 2);        /* #87CEEB */
-  border-color: rgb(98, 2, 2); /* #9370DB */
+  background: var(--button-hover-bg);          /* previously: rgba(29, 2, 237, 0.389) */
+  border-color: var(--button-hover-border);    /* previously: rgb(98, 2, 2) */
 }
