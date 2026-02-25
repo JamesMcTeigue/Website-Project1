@@ -15,8 +15,8 @@ body {
 /* Light underline under the title */
 .underline {
   width: 200px;
-  height: 2opx;
-  background: #c0eb00;
+  height: 20px;
+  background: #060702;
   margin-bottom: 50px;
 }
 
@@ -26,18 +26,18 @@ body {
   margin: 150px auto;
   padding: 20px 80px;
   background: #0c6f76;
-  border: 2px solid #c8eaff;
+  border: 2px solid #09e52da4;
   border-radius: 10px;
   font-size: 18px;
-  color: #15267a;
+  color: #000d51;
   cursor: pointer;
 
   /* Smooth transition to hover state */
-  transition: background 0.25s ease, border-color 0.25s ease;
+  transition: background 0.55s ease, border-color 1.05s ease;
 }
 
 /* Hover effect */
 .main-button:hover {
-  background: skyblue;        /* #87CEEB */
-  border-color: mediumPurple; /* #9370DB */
+  background: rgb(237, 2, 2);        /* #87CEEB */
+  border-color: rgb(98, 2, 2); /* #9370DB */
 }
