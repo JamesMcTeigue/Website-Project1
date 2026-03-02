@@ -9,7 +9,7 @@
   <meta name="description" content="A short description of your page goes here.">
 
   <!-- Your styles -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles (3).css">
 
   <style>
     /* Keyboard users need to see where focus is */
@@ -33,11 +33,13 @@
     <h1 class="title">Basic Website</h1>
   </header>
 
-  <nav aria-label="Primary">
-    <ul>
-      <li><a href="#" aria-current="page">Home</a></li>
-    </ul>
-  </nav>
+  
+<nav id="draggableNav" aria-label="Primary">
+  <ul>
+    <li><a href="#" aria-current="page">Home</a></li>
+  </ul>
+</nav>
+
 
   <main id="main-content">
     <div class="underline" id="draggableUnderline"aria-hidden="true"></div>
@@ -62,214 +64,7 @@
   </script>
 
   <!-- Your scripts -->
-  <script src="script.js"></script>
+  <script src="script (3).js"></script>
 
 </body>
-<script>
-  (function () {
-    const u = document.getElementById('draggableUnderline');
-
-    // Dragging state
-    let dragging = false;
-    let startMouseX = 0;
-    let startMouseY = 0;
-    let startLeft = 0;
-    let startTop = 0;
-
-    // Original position (captured on first layout)
-    let originalLeft = null;
-    let originalTop = null;
-
-    // Fall animation state
-    let isFalling = false;
-    let fallStartTime = 0;
-    let fallVelocity = 0; // px/ms
-    const gravity = 0.003; // px/ms^2 (tweak for faster/slower falling)
-
-    // Helpers
-    function pxToNum(v) {
-      return parseFloat(String(v).replace('px', '')) || 0;
-    }
-
-    // Ensure absolute with explicit left/top; capture original if not set
-    function normalizePositioning() {
-      const cs = window.getComputedStyle(u);
-      if (cs.position !== 'absolute') {
-        u.style.position = 'absolute';
-      }
-
-      const rect = u.getBoundingClientRect();
-      const docLeft = window.scrollX + rect.left;
-      const docTop = window.scrollY + rect.top;
-
-      // If we haven’t explicitly set left/top, do so now based on current layout box
-      if (cs.left === 'auto') u.style.left = docLeft + 'px';
-      if (cs.top === 'auto') u.style.top = docTop + 'px';
-
-      // Store original position once
-      if (originalLeft === null || originalTop === null) {
-        originalLeft = pxToNum(u.style.left);
-        originalTop = pxToNum(u.style.top);
-      }
-    }
-
-    function getViewportBottomY() {
-      // Bottom edge of the visible viewport in document coords
-      return window.scrollY + document.documentElement.clientHeight;
-    }
-
-    function getUnderlineBox() {
-      const rect = u.getBoundingClientRect();
-      return {
-        width: rect.width,
-        height: rect.height,
-        left: window.scrollX + rect.left,
-        top: window.scrollY + rect.top
-      };
-    }
-
-    // Drag handlers
-    function onMouseDown(e) {
-      if (e.button !== 0 || isFalling) return; // left-click only; ignore if falling
-      normalizePositioning();
-
-      dragging = true;
-      u.classList.add('dragging');
-      document.body.style.userSelect = 'none';
-
-      startMouseX = e.clientX;
-      startMouseY = e.clientY;
-      startLeft = pxToNum(u.style.left);
-      startTop = pxToNum(u.style.top);
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    }
-
-    function onMouseMove(e) {
-      if (!dragging || isFalling) return;
-      const dx = e.clientX - startMouseX;
-      const dy = e.clientY - startMouseY;
-
-      u.style.left = (startLeft + dx) + 'px';
-      u.style.top = (startTop + dy) + 'px';
-    }
-
-    function onMouseUp() {
-      if (!dragging) return;
-      dragging = false;
-      u.classList.remove('dragging');
-      document.body.style.userSelect = '';
-
-      // Start falling animation
-      startFall();
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    // Touch (optional)
-    function onTouchStart(e) {
-      if (isFalling) return;
-      const t = e.touches[0];
-      if (!t) return;
-      normalizePositioning();
-
-      dragging = true;
-      u.classList.add('dragging');
-      document.body.style.userSelect = 'none';
-
-      startMouseX = t.clientX;
-      startMouseY = t.clientY;
-      startLeft = pxToNum(u.style.left);
-      startTop = pxToNum(u.style.top);
-
-      document.addEventListener('touchmove', onTouchMove, { passive: false });
-      document.addEventListener('touchend', onTouchEnd);
-    }
-
-    function onTouchMove(e) {
-      if (!dragging || isFalling) return;
-      const t = e.touches[0];
-      if (!t) return;
-      e.preventDefault();
-
-      const dx = t.clientX - startMouseX;
-      const dy = t.clientY - startMouseY;
-
-      u.style.left = (startLeft + dx) + 'px';
-      u.style.top = (startTop + dy) + 'px';
-    }
-
-    function onTouchEnd() {
-      if (!dragging) return;
-      dragging = false;
-      u.classList.remove('dragging');
-      document.body.style.userSelect = '';
-      startFall();
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
-    }
-
-    // Fall animation
-    function startFall() {
-      if (isFalling) return;
-      isFalling = true;
-      fallVelocity = 0;
-      fallStartTime = performance.now();
-      u.classList.add('falling');
-      requestAnimationFrame(stepFall);
-    }
-
-    function stepFall(now) {
-      if (!isFalling) return;
-
-      const dt = now - fallStartTime; // ms since last frame
-      fallStartTime = now;
-
-      // Current top
-      const currentTop = pxToNum(u.style.top);
-      const { height } = getUnderlineBox();
-      const viewportBottom = getViewportBottomY();
-      const bottomLimitTop = viewportBottom - height; // top when touching bottom
-
-      // Update velocity and position (basic gravity integration)
-      fallVelocity += gravity * dt;             // v = v0 + a*dt
-      let newTop = currentTop + fallVelocity * dt; // s = s0 + v*dt
-
-      if (newTop >= bottomLimitTop) {
-        // Hit the bottom → stop and reset after a brief pause
-        u.style.top = bottomLimitTop + 'px';
-        finishFallAndReset();
-      } else {
-        u.style.top = newTop + 'px';
-        requestAnimationFrame(stepFall);
-      }
-    }
-
-    function finishFallAndReset() {
-      // Small delay so the user can see it reached bottom
-      setTimeout(() => {
-        // Reset to original position
-        u.style.left = originalLeft + 'px';
-        u.style.top = originalTop + 'px';
-        u.classList.remove('falling');
-        isFalling = false;
-      }, 350);
-    }
-
-    // Attach events
-    u.addEventListener('mousedown', onMouseDown);
-    u.addEventListener('touchstart', onTouchStart, { passive: true });
-
-    // Optional: Recalculate behavior on resize (bottom limit uses viewport height)
-    window.addEventListener('resize', () => {
-      // No-op; we compute limits each frame. Keeping this here in case you want to adjust logic.
-    });
-
-    // Initialize original position on load (in case you want to avoid specifying left/top in CSS)
-    window.addEventListener('load', () => {
-      normalizePositioning();
-    });
-  })();
-</script>
 </html>

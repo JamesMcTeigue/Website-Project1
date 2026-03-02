@@ -1,0 +1,199 @@
+
+/* ===== Friendly knobs ===== */
+:root {
+  --size-brick-width: 180px;
+  --size-brick-height: 72px;
+  --size-mortar-thickness: 6px;
+
+  /* Base colors (with visible defaults that do NOT rely on JS) */
+  --color-brick-base: #9a3d34; /* lighter so pattern shows on all screens */
+  --color-brick-shade: #6a2a24;
+  --color-mortar: #c9c2b8;
+
+  --veil-overlay: rgba(0, 0, 0, 0.12);
+  --tint-angle-deg: 180deg;
+  --tint-color-top: rgba(0, 0, 0, 0.25);
+  --tint-color-bottom: rgba(0, 0, 0, 0.08);
+
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --mouse-brightness-amount: 0; /* 0..1 */
+  --mouse-glow-multiplier: 0.6; /* make glow VERY obvious for debugging */
+
+  /* Orbs (static defaults so you still see color even if JS fails) */
+  --orb1-hue: 24;  --orb1-pos-x: 25%; --orb1-pos-y: 35%;
+  --orb2-hue: 210; --orb2-pos-x: 75%; --orb2-pos-y: 65%;
+  --orb3-hue: 120; --orb3-pos-x: 50%; --orb3-pos-y: 50%;
+
+  --title-text: #455dd7;
+  --title-underline-bg: #d7d7f5;
+  --button-bg: #e0fdff; --button-border: #c8eaff; --button-text: #15267a;
+  --button-hover-bg: #87ceeb; --button-hover-border: mediumpurple;
+}
+
+:root {
+  --brick-w: var(--size-brick-width);
+  --brick-h: var(--size-brick-height);
+  --mortar-t: var(--size-mortar-thickness);
+  --brick: var(--color-brick-base);
+  --brick-dk: var(--color-brick-shade);
+  --mortar: var(--color-mortar);
+  --overlay: var(--veil-overlay);
+  --tint-angle: var(--tint-angle-deg);
+  --tint-from: var(--tint-color-top);
+  --tint-to: var(--tint-color-bottom);
+  --orb1-h: var(--orb1-hue); --orb1-x: var(--orb1-pos-x); --orb1-y: var(--orb1-pos-y);
+  --orb2-h: var(--orb2-hue); --orb2-x: var(--orb2-pos-x); --orb2-y: var(--orb2-pos-y);
+  --orb3-h: var(--orb3-hue); --orb3-x: var(--orb3-pos-x); --orb3-y: var(--orb3-pos-y);
+  --mx: var(--mouse-x); --my: var(--mouse-y); --mouse-brightness: var(--mouse-brightness-amount);
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  padding: 40px;
+  font-family: Arial, sans-serif;
+
+  /* Fallback color behind everything */
+  background-color: #5b2b26;
+
+  /* ==========================
+     LAYER ORDER (top → bottom)
+     1) Mouse glow
+     2) Big color orbs (x3)
+     3) Mortar pixel texture  [NEW]
+     4) Brick pixel texture   [NEW]
+     5) Horizontal mortar lines (repeating-linear-gradient)
+     6) Vertical mortar lines (repeating-linear-gradient)
+     7) Brick base fill (linear-gradient)
+     ========================== */
+
+  background-image:
+    /* 1) Debug mouse glow */
+    radial-gradient(
+      circle at var(--mx) var(--my),
+      rgba(255,255,255, calc(var(--mouse-brightness) * var(--mouse-glow-multiplier))),
+      transparent 30%
+    ),
+
+    /* 2) Big orbs (3 layers, unchanged) */
+    radial-gradient(600px 600px at var(--orb1-x) var(--orb1-y), hsla(var(--orb1-h), 70%, 60%, 0.35), transparent 60%),
+    radial-gradient(800px 800px at var(--orb2-x) var(--orb2-y), hsla(var(--orb2-h), 70%, 60%, 0.30), transparent 65%),
+    radial-gradient(700px 700px at var(--orb3-x) var(--orb3-y), hsla(var(--orb3-h), 70%, 60%, 0.25), transparent 70%),
+
+    /* 3) Mortar pixel texture  [NEW] */
+    url("mortar_tile.png"),
+
+    /* 4) Brick pixel texture   [NEW] */
+    url("brick_tile.png"),
+
+    /* 5) Horizontal mortar lines (existing) */
+    repeating-linear-gradient(
+      0deg,
+      var(--mortar) 0,
+      var(--mortar) var(--mortar-t),
+      transparent var(--mortar-t),
+      transparent var(--brick-h)
+    ),
+
+    /* 6) Vertical mortar lines (existing, offset every other row) */
+    repeating-linear-gradient(
+      90deg,
+      var(--mortar) 0,
+      var(--mortar) var(--mortar-t),
+      transparent var(--mortar-t),
+      transparent var(--brick-w)
+    ),
+
+    /* 7) Brick base fill (existing) */
+    linear-gradient(0deg, var(--brick), var(--brick));
+
+  /* Blend so pixel textures only influence their intended areas:
+     - Mortar texture should show up most where mortar lines exist.
+     - Brick texture should show up in the brick fill (not mortar).
+     We use 'multiply' over colored bases; tweak to taste. */
+  background-blend-mode:
+    screen,    /* mouse glow over everything */
+    screen,    /* orb 1 */
+    screen,    /* orb 2 */
+    screen,    /* orb 3 */
+
+    multiply,  /* mortar texture over mortar colors */
+    multiply,  /* brick texture over brick color */
+
+    normal,    /* horizontal mortar mask */
+    normal,    /* vertical mortar mask */
+    normal;    /* brick base */
+
+  /* Sizes: keep your original logic, but add per-texture scales */
+  background-size:
+    100% 100%,                 /* mouse glow */
+    cover,                     /* orb 1 */
+    cover,                     /* orb 2 */
+    cover,                     /* orb 3 */
+    calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2), /* mortar texture tile [NEW] */
+    16px 16px,                 /* brick texture tile [NEW] */
+    100% var(--brick-h),       /* horizontal mortar stripes */
+    var(--brick-w) 100%,       /* vertical mortar stripes */
+    100% 100%;                 /* brick base */
+
+  /* Positions (keep your mortar vertical lines offset) */
+  background-position:
+    0 0,                       /* mouse glow */
+    center,                    /* orb 1 */
+    center,                    /* orb 2 */
+    center,                    /* orb 3 */
+    0 0,                       /* mortar texture */
+    0 0,                       /* brick texture */
+    0 0,                       /* horizontal mortar */
+    calc(var(--brick-w) / 2) 0,/* vertical mortar offset every other row */
+    0 0;                       /* brick base */
+
+  /* Keep textures crisp and “chunky” */
+  image-rendering: pixelated;
+
+  /* Rest of your existing styles */
+  background-attachment: fixed;
+  color: #f2f2f2;
+}
+
+/* Keep content above any overlays */
+body > * { position: relative; z-index: 1; }
+
+.title { color: var(--title-text); margin-bottom: 4px; font-weight: 500; }
+.underline { width: 200px; height: 2px; background: var(--title-underline-bg); margin-bottom: 50px; }
+
+.main-button {
+  display: block; margin: 150px auto; padding: 20px 80px;
+  background: var(--button-bg); border: 2px solid var(--button-border);
+  border-radius: 10px; font-size: 18px; color: var(--button-text);
+  cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease;
+}
+.main-button:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tint-color-top: rgba(0, 0, 0, 0.50);
+    --tint-color-bottom: rgba(0, 0, 0, 0.20);
+  }
+  body { color: #ececec; }
+}
+
+@media (max-width: 768px) { body { background-attachment: scroll; } }
+
+/* Draggable NAV base styles */
+#draggableNav {
+  position: absolute; left: 40px; top: 40px;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: grab; user-select: none;
+}
+#draggableNav.dragging { cursor: grabbing; }
+#draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
+#draggableNav a { color: #fff; text-decoration: none; }
+#draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }

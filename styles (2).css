@@ -1,3 +1,4 @@
+
 /* ===== Friendly, human-readable knobs ===== */
 :root {
   /* Brick size */
@@ -7,7 +8,7 @@
 
   /* Brick palette */
   --color-brick-base: #7a2f2a;
-  --color-brick-shade: #5a221e;   /* darker edge/shading */
+  --color-brick-shade: #5a221e; /* darker edge/shading */
   --color-mortar: #b8afa5;
 
   /* Global readability overlay */
@@ -19,8 +20,8 @@
   --tint-color-bottom: rgba(0, 0, 0, 0.10);
 
   /* Texture “randomness” */
-  --texture-noise-strength: 0.4; /* 0–0.4 */
-  --texture-speckle-amount: 0.3; /* 0–0.4 */
+  --texture-noise-strength: 0.14; /* 0–0.4 */
+  --texture-speckle-amount: 0.16; /* 0–0.4 */
 
   /* Noise scales */
   --texture-scale-grain-lg: 260px;
@@ -35,7 +36,6 @@
   --orb1-hue: 20;
   --orb2-hue: 200;
   --orb3-hue: 120;
-
   --orb1-pos-x: 20%;
   --orb1-pos-y: 30%;
   --orb2-pos-x: 80%;
@@ -59,35 +59,30 @@
   --button-hover-border: mediumpurple;
 }
 
-/* ===== Backwards-compat aliases (do not edit below) ===== */
+/* ===== Backwards-compat aliases ===== */
 :root {
   /* sizes */
   --brick-w: var(--size-brick-width);
   --brick-h: var(--size-brick-height);
   --mortar-t: var(--size-mortar-thickness);
-
   /* colors */
   --brick: var(--color-brick-base);
   --brick-dk: var(--color-brick-shade);
   --mortar: var(--color-mortar);
-
   /* overlay + tint */
   --overlay: var(--veil-overlay);
   --tint-angle: var(--tint-angle-deg);
   --tint-from: var(--tint-color-top);
   --tint-to: var(--tint-color-bottom);
-
   /* texture */
   --noise-strength: var(--texture-noise-strength);
   --speckle: var(--texture-speckle-amount);
   --grain-scale-1: var(--texture-scale-grain-lg);
   --grain-scale-2: var(--texture-scale-grain-sm);
   --speckle-scale: var(--texture-scale-speckle);
-
   /* bevel */
   --bevel-light: var(--bevel-highlight);
   --bevel-dark: var(--bevel-shadow);
-
   /* orbs */
   --orb1-h: var(--orb1-hue);
   --orb2-h: var(--orb2-hue);
@@ -98,7 +93,6 @@
   --orb2-y: var(--orb2-pos-y);
   --orb3-x: var(--orb3-pos-x);
   --orb3-y: var(--orb3-pos-y);
-
   /* mouse */
   --mx: var(--mouse-x);
   --my: var(--mouse-y);
@@ -113,6 +107,7 @@
   --tint-color-top: rgba(80, 24, 18, 0.40);
   --tint-color-bottom: rgba(80, 24, 18, 0.12);
 }
+
 :root[data-theme="whitewashed"] {
   --color-brick-base: #e7e5e1;
   --color-brick-shade: #cfcac3;
@@ -123,6 +118,7 @@
   --bevel-highlight: rgba(255, 255, 255, 0.18);
   --bevel-shadow: rgba(0, 0, 0, 0.10);
 }
+
 :root[data-theme="industrial"] {
   --color-brick-base: #3a3a3a;
   --color-brick-shade: #2a2a2a;
@@ -134,14 +130,12 @@
 
 html, body { height: 100%; }
 
+/* Fallback background (in case gradients fail to load): a simple brick-like pattern */
 body {
   margin: 0;
   padding: 40px;
   font-family: Arial, sans-serif;
-
-  /* ===============================
-     Brick + animated gradients stack
-     =============================== */
+  background-color: #5b2b26; /* visible fallback */
   background-image:
     /* Mouse glow (topmost) */
     radial-gradient(
@@ -156,7 +150,7 @@ body {
     /* Global tint & overlay */
     linear-gradient(var(--tint-angle), var(--tint-from, rgba(0,0,0,0.35)), var(--tint-to, rgba(0,0,0,0.10))),
     linear-gradient(var(--overlay), var(--overlay)),
-    /* Global blotches */
+    /* Global blotches (grain) */
     radial-gradient(circle at 18% 28%, rgba(255,255,255, calc(var(--noise-strength)*0.7)), transparent 55%),
     radial-gradient(circle at 78% 72%, rgba(0,0,0, calc(var(--noise-strength)+0.08)), transparent 58%),
     radial-gradient(circle at 32% 64%, rgba(255,255,255, calc(var(--noise-strength)*0.5)), transparent 45%),
@@ -169,7 +163,6 @@ body {
     linear-gradient(90deg, var(--mortar) var(--mortar-t), transparent 0),
     linear-gradient(90deg, var(--mortar) var(--mortar-t), transparent 0),
     linear-gradient(0deg, var(--brick), var(--brick));
-
   background-size:
     100% 100%,
     100% 100%, 100% 100%, 100% 100%,
@@ -185,7 +178,6 @@ body {
     var(--brick-w) var(--brick-h),
     var(--brick-w) var(--brick-h),
     var(--brick-w) var(--brick-h);
-
   background-position:
     0 0,
     0 0, 0 0, 0 0,
@@ -201,7 +193,6 @@ body {
     0 0,
     calc(var(--brick-w) / 2) calc(var(--brick-h) / 2),
     0 0;
-
   background-repeat:
     no-repeat,
     no-repeat, no-repeat, no-repeat,
@@ -217,7 +208,6 @@ body {
     repeat,
     repeat,
     repeat;
-
   background-blend-mode:
     screen,
     screen, screen, screen,
@@ -233,7 +223,6 @@ body {
     normal,
     normal,
     normal;
-
   background-attachment: fixed;
   color: #f2f2f2;
 }
@@ -257,6 +246,7 @@ body > * { position: relative; z-index: 1; }
 /* Title, underline, button — using your palette */
 .title { color: var(--title-text); margin-bottom: 4px; font-weight: 500; }
 .underline { width: 200px; height: 2px; background: var(--title-underline-bg); margin-bottom: 50px; }
+
 .main-button {
   display: block; margin: 150px auto; padding: 20px 80px;
   background: var(--button-bg); border: 2px solid var(--button-border);
@@ -265,6 +255,7 @@ body > * { position: relative; z-index: 1; }
 }
 .main-button:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
 
+/* Dark scheme tweaks */
 @media (prefers-color-scheme: dark) {
   :root {
     --overlay: rgba(0, 0, 0, 0.28);
@@ -274,4 +265,27 @@ body > * { position: relative; z-index: 1; }
   body { color: #ececec; }
 }
 
-@media (max-width: 768px) { body { background-attachment: scroll; } }
+/* Mobile: avoid fixed attachment quirks */
+@media (max-width: 768px) {
+  body { background-attachment: scroll; }
+}
+
+/* === Draggable NAV base styles === */
+#draggableNav {
+  position: absolute; /* JS normalizes if needed */
+  left: 40px; 
+  top: 40px;
+
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: grab;
+  user-select: none;
+}
+#draggableNav.dragging { cursor: grabbing; }
+#draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
+#draggableNav a { color: #fff; text-decoration: none; }
+#draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
