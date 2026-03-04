@@ -204,3 +204,52 @@ body > * { position: relative; z-index: 1; }
 #draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
 #draggableNav a { color: #fff; text-decoration: none; }
 #draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
+/* === Left pipe overlay via pseudo-element === */
+/* === Left pipe column (fixed overlay, repeats top→bottom) === */
+:root {
+  /* Control how wide the pipe column is on screen */
+  --pipe-col-w: 120px;            /* tweak to match Pipe.png's native width */
+}
+
+/* === Left pipe column (fixed overlay, repeats top→bottom) === */
+:root{
+  /* Width of the pipe column on screen. Adjust to your sprite’s native width or desired scale. */
+  --pipe-col-w: 120px;
+  /* If you know the exact native height of Pipe.png (e.g., 224px), set it here for pixel-perfect tiling. */
+  --pipe-native-h: 224px; /* change if your sprite is different */
+}
+
+body::before{
+  content: "";
+  position: fixed;       /* stays put while scrolling */
+  left: 0;
+  top: 0;
+  bottom: 0;             /* span full viewport height */
+  width: var(--pipe-col-w);
+  z-index: 999;          /* on top of background & content */
+
+  /* Draw the pipe only as a vertical tiling strip */
+  background-image: url("Pipe.png");
+  background-repeat: repeat-y;      /* ONLY vertical repetition */
+  background-position: left top;
+  /* Choose ONE of the following background-size lines: */
+
+  /* A) Fit width, scale height automatically (good if you don't know native height) */
+  /* background-size: 100% auto; */
+
+  /* B) Pixel-perfect tiling using the sprite's exact native height (best for pixel art) */
+  background-size: 100% var(--pipe-native-h);
+
+  /* Keep pixel art crisp */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  pointer-events: none;            /* clicks pass through */
+}
+
+/* Optionally keep content clear of the pipe gutter */
+@media (min-width: 560px){
+  header, nav, main, footer { 
+    margin-left: calc(var(--pipe-col-w) + 12px);
+  }
+}
