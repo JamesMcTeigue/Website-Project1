@@ -3,7 +3,10 @@
 :root {
   --size-brick-width: 180px;
   --size-brick-height: 72px;
-  --size-mortar-thickness: 6px;
+  --size-mortar-thickness: 12px;
+  --brick-grain-image: url("brick textuer-1.png"); /* fallback if JS fails */
+  --brick-grid-cols: 1;  /* mosaic columns (1 when single tile) */
+  --brick-grid-rows: 1;  /* mosaic rows (1 when single tile) */
 
   /* Base colors (with visible defaults that do NOT rely on JS) */
   --color-brick-base: #9a3d34; /* lighter so pattern shows on all screens */
@@ -18,7 +21,7 @@
   --mouse-x: 50%;
   --mouse-y: 50%;
   --mouse-brightness-amount: 0; /* 0..1 */
-  --mouse-glow-multiplier: 0.6; /* make glow VERY obvious for debugging */
+  --mouse-glow-multiplier: 0.3; /* make glow VERY obvious for debugging */
 
   /* Orbs (static defaults so you still see color even if JS fails) */
   --orb1-hue: 24;  --orb1-pos-x: 25%; --orb1-pos-y: 35%;
@@ -47,7 +50,11 @@
   --orb3-h: var(--orb3-hue); --orb3-x: var(--orb3-pos-x); --orb3-y: var(--orb3-pos-y);
   --mx: var(--mouse-x); --my: var(--mouse-y); --mouse-brightness: var(--mouse-brightness-amount);
 }
-
+:root {
+  --pixel-scale: 2.5; /* 1 = 64px tiles; 0.5 = 32px; 2 = 128px */
+  --brick-grain-w: calc(64px * var(--pixel-scale));
+  --brick-grain-h: calc(64px * var(--pixel-scale));
+}
 html, body { height: 100%; }
 
 body {
@@ -86,7 +93,7 @@ body {
     url("mortar_tile.png"),
 
     /* 4) Brick pixel texture   [NEW] */
-    url("brick_tile.png"),
+    var(--brick-grain-image),
 
     /* 5) Horizontal mortar lines (existing) */
     repeating-linear-gradient(
@@ -133,7 +140,7 @@ body {
     cover,                     /* orb 2 */
     cover,                     /* orb 3 */
     calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2), /* mortar texture tile [NEW] */
-    16px 16px,                 /* brick texture tile [NEW] */
+    calc(var(--brick-grain-w) * var(--brick-grid-cols)) calc(var(--brick-grain-h) * var(--brick-grid-rows)), /* brick texture tile */
     100% var(--brick-h),       /* horizontal mortar stripes */
     var(--brick-w) 100%,       /* vertical mortar stripes */
     100% 100%;                 /* brick base */
