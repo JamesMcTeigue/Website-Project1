@@ -42,7 +42,7 @@
 
 
   <main id="main-content">
-    <div class="underline" id="draggableUnderline"aria-hidden="true"></div>
+    <div class="underline" aria-hidden="true"></div>
     <p>Your content goes here.</p>
     <button class="main-button" id="myButton" type="button">Button</button>
   </main>
@@ -51,16 +51,17 @@
     <small>&copy; <span id="year"></span> Your Name</small>
   </footer>
 
+  <!-- Full-page light overlay — follows mouse, brightens everything via mix-blend-mode -->
+  <div id="mouse-light-overlay" aria-hidden="true"></div>
+
+  <!-- Scene floor — sits in front of the brick wall. Add bins/props as children here. -->
+  <div id="scene-floor">
+    <img src="bin.jpg" alt="rubbish bin" class="scene-prop" id="bin-main">
+  </div>
+
   <script>
     // Keep the copyright year current automatically
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    const btn = document.getElementById('myButton');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        alert('Button clicked');
-      });
-    }
   </script>
 
   <!-- Your scripts -->

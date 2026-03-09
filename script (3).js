@@ -1,8 +1,5 @@
 
-// Debug banner so we know JS loaded
-console.info('[site] script.js loaded');
-
-// Button demo (kept)
+// Button click handler
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('myButton');
   if (btn) {
@@ -10,7 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// === Pointer-based mouse glow + orbs animator ===
+// === Mouse glow + colour orbs animator ===
+// Writes --mouse-x, --mouse-y, --mouse-brightness-amount, and --orbN-* to :root each frame.
+// The CSS background layers and #mouse-light-overlay read these variables directly.
 (function () {
   const root = document.documentElement;
   const supportsPE = 'onpointermove' in window;
