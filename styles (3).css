@@ -17,7 +17,7 @@
   --pixel-scale: 2.5;
 
   /* Pipe */
-  --pipe-col-w: 120px;    /* width of the pipe column on screen */
+  --pipe-col-w: 170px;    /* width of the pipe column on screen */
   --pipe-native-h: 224px; /* native height of Pipe.png — change if your sprite differs */
 
   /* Floor */
@@ -199,7 +199,7 @@ body::before {
   left: 0; top: 0; bottom: 0;
   width: var(--pipe-col-w);
   z-index: 999;
-  background-image: url("Pipe.png");
+  background-image: url("Pipe-2.png");
   background-repeat: repeat-y;
   background-position: left top;
   background-size: 100% var(--pipe-native-h);
@@ -246,7 +246,8 @@ body::before {
 }
 
 #bin-main {
-  right: 12%;
+  right: 2%;
+  height:250%;
 }
 
 /* =====================================================
