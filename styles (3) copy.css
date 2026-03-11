@@ -1,16 +1,14 @@
-/* =====================================================
-   SCENE STYLES — Brick wall + Left pipe + Textured floor
-   with a CURB LAYER above the floor.
-   ===================================================== */
 
-/* ============ KNOBS ============ */
+/* =====================================================
+   KNOBS — edit these to change the look of the scene
+   ===================================================== */
 :root {
   /* Brick wall */
   --size-brick-width: 180px;
   --size-brick-height: 72px;
   --size-mortar-thickness: 12px;
   --brick-grain-image: url("brick textuer-1.png");
-  --brick-grid-cols: 1;
+  --brick-grid-cols: 1;   /* increase if your texture is a multi-brick mosaic */
   --brick-grid-rows: 1;
   --color-brick-base: #9a3d34;
   --color-mortar: #c9c2b8;
@@ -18,31 +16,20 @@
   /* Pixel art scale (1 = 64px tiles, 2 = 128px, 0.5 = 32px) */
   --pixel-scale: 2.5;
 
-  /* Pipe (left vertical overlay) */
-  --pipe-col-w: 170px;      /* width of the pipe column */
-  --pipe-native-h: 224px;   /* native height of Pipe-2.png segment */
+  /* Pipe */
+  --pipe-col-w: 170px;    /* width of the pipe column on screen */
+  --pipe-native-h: 224px; /* native height of Pipe.png — change if your sprite differs */
 
-  /* Floor (viewport strip) */
-  --floor-height: 28vh;     /* how tall the floor strip is */
-  --floor-color: #2a2a2a;   /* fallback color behind the ground texture */
+  /* Floor */
+  --floor-height: 28vh;   /* how tall the floor strip is */
+  --floor-color: #2a2a2a; /* dark concrete */
 
-  /* NEW: Ground texture */
-  --ground-image: url("ground texture.png");
-  --ground-tile-px: 448px;  /* native size of your texture */
-  --ground-scale: 1;        /* 1 = 1:1 pixels; 0.5 = half; 2 = double */
-  --ground-size: calc(var(--ground-tile-px) * var(--ground-scale));
+  /* Mouse light overlay */
+  --light-radius: 38%;          /* spotlight size — bigger = wider pool of light */
+  --light-intensity: 0.55;      /* max brightness at cursor centre (0–1) */
+  --light-color: 255, 220, 160; /* warm white; use 255,255,255 for neutral */
 
-  /* NEW: Curb (above the floor) */
-  --curb-top-lip: 6px;      /* thin upper ledge */
-  --curb-height: 26px;      /* front face height below the lip */
-  --curb-top-color: #c9c5bb;
-  --curb-face-color: #b7b2a9;
-
-  /* NEW: Shadow where wall meets curb/floor */
-  --floor-top-shadow: rgba(0, 0, 0, 0.45);
-  --floor-top-shadow-height: 42px;
-
-  /* JS-driven vars (mouse light + orbs) */
+  /* JS writes these every frame — do not edit manually */
   --mouse-x: 50%;
   --mouse-y: 50%;
   --mouse-brightness-amount: 0;
@@ -50,14 +37,14 @@
   --orb2-hue: 210; --orb2-pos-x: 75%; --orb2-pos-y: 65%;
   --orb3-hue: 120; --orb3-pos-x: 50%; --orb3-pos-y: 50%;
 
-  /* UI */
+  /* UI colours */
   --title-text: #455dd7;
   --title-underline-bg: #d7d7f5;
-  --button-bg: #e0fdff; --button-border: #c8eaff; --button-text: #15267a;
-  --button-hover-bg: #87ceeb; --button-hover-border: mediumpurple;
+  --button-bg: #e0fdff;         --button-border: #c8eaff;   --button-text: #15267a;
+  --button-hover-bg: #87ceeb;   --button-hover-border: mediumpurple;
 }
 
-/* Internal shorthands */
+/* Internal shorthands — these just alias the knobs above for brevity in CSS */
 :root {
   --brick-w: var(--size-brick-width);
   --brick-h: var(--size-brick-height);
@@ -66,15 +53,15 @@
   --mortar: var(--color-mortar);
   --brick-grain-w: calc(64px * var(--pixel-scale));
   --brick-grain-h: calc(64px * var(--pixel-scale));
-
   --orb1-h: var(--orb1-hue); --orb1-x: var(--orb1-pos-x); --orb1-y: var(--orb1-pos-y);
   --orb2-h: var(--orb2-hue); --orb2-x: var(--orb2-pos-x); --orb2-y: var(--orb2-pos-y);
   --orb3-h: var(--orb3-hue); --orb3-x: var(--orb3-pos-x); --orb3-y: var(--orb3-pos-y);
-
   --mx: var(--mouse-x); --my: var(--mouse-y); --mouse-brightness: var(--mouse-brightness-amount);
 }
 
-/* ============ BASE ============ */
+/* =====================================================
+   BASE
+   ===================================================== */
 html, body { height: 100%; }
 
 body {
@@ -84,23 +71,27 @@ body {
   font-family: Arial, sans-serif;
   color: #f2f2f2;
 
-  /* Fallback solid color shown while images load */
+  /* Fallback solid colour shown while images load */
   background-color: #5b2b26;
 
-  /* BACKGROUND LAYERS (top → bottom)
-     1) Three colour orbs (JS animates positions)
+  /* ── BACKGROUND LAYER ORDER (top → bottom) ──────────
+     1) Three colour orbs (JS animates their positions)
      2) Mortar pixel texture
      3) Brick pixel texture
      4) Horizontal mortar lines
      5) Vertical mortar lines
      6) Brick base fill
-  */
+     ──────────────────────────────────────────────────── */
   background-image:
+    /* 1) Colour orbs */
     radial-gradient(600px 600px at var(--orb1-x) var(--orb1-y), hsla(var(--orb1-h), 70%, 60%, 0.35), transparent 60%),
     radial-gradient(800px 800px at var(--orb2-x) var(--orb2-y), hsla(var(--orb2-h), 70%, 60%, 0.30), transparent 65%),
     radial-gradient(700px 700px at var(--orb3-x) var(--orb3-y), hsla(var(--orb3-h), 70%, 60%, 0.25), transparent 70%),
+    /* 2) Mortar pixel texture */
     url("mortar_tile.png"),
+    /* 3) Brick pixel texture */
     var(--brick-grain-image),
+    /* 4) Horizontal mortar lines */
     repeating-linear-gradient(
       0deg,
       var(--mortar) 0,
@@ -108,6 +99,7 @@ body {
       transparent var(--mortar-t),
       transparent var(--brick-h)
     ),
+    /* 5) Vertical mortar lines */
     repeating-linear-gradient(
       90deg,
       var(--mortar) 0,
@@ -115,51 +107,56 @@ body {
       transparent var(--mortar-t),
       transparent var(--brick-w)
     ),
+    /* 6) Brick base fill */
     linear-gradient(0deg, var(--brick), var(--brick));
 
   background-blend-mode:
-    screen, /* orb 1 */
-    screen, /* orb 2 */
-    screen, /* orb 3 */
-    multiply, /* mortar texture over mortar color */
-    multiply, /* brick texture over brick color */
-    normal,   /* horizontal mortar lines */
-    normal,   /* vertical mortar lines */
-    normal;   /* brick base */
+    screen,    /* orb 1 */
+    screen,    /* orb 2 */
+    screen,    /* orb 3 */
+    multiply,  /* mortar texture over mortar colour */
+    multiply,  /* brick texture over brick colour */
+    normal,    /* horizontal mortar lines */
+    normal,    /* vertical mortar lines */
+    normal;    /* brick base */
 
   background-size:
-    cover, /* orb 1 */
-    cover, /* orb 2 */
-    cover, /* orb 3 */
-    calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2), /* mortar texture tile */
+    cover,                        /* orb 1 */
+    cover,                        /* orb 2 */
+    cover,                        /* orb 3 */
+    calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2),                                          /* mortar texture tile */
     calc(var(--brick-grain-w) * var(--brick-grid-cols)) calc(var(--brick-grain-h) * var(--brick-grid-rows)), /* brick texture tile */
-    100% var(--brick-h), /* horizontal mortar stripes */
-    var(--brick-w) 100%, /* vertical mortar stripes */
-    100% 100%;          /* brick base */
+    100% var(--brick-h),          /* horizontal mortar stripes */
+    var(--brick-w) 100%,          /* vertical mortar stripes */
+    100% 100%;                    /* brick base */
 
   background-position:
-    center, /* orb 1 */
-    center, /* orb 2 */
-    center, /* orb 3 */
-    0 0,    /* mortar texture */
-    0 0,    /* brick texture */
-    0 0,    /* horizontal mortar */
-    calc(var(--brick-w) / 2) 0, /* vertical mortar offset */
-    0 0;    /* brick base */
+    center,                        /* orb 1 */
+    center,                        /* orb 2 */
+    center,                        /* orb 3 */
+    0 0,                           /* mortar texture */
+    0 0,                           /* brick texture */
+    0 0,                           /* horizontal mortar */
+    calc(var(--brick-w) / 2) 0,   /* vertical mortar — offset half a brick width so joints don't line up */
+    0 0;                           /* brick base */
 
-  image-rendering: pixelated; /* keep textures crisp */
+  /* Keep pixel art crisp and chunky */
+  image-rendering: pixelated;
   background-attachment: fixed;
 }
 
-/* On mobile, fixed background can hitch */
+/* On mobile, fixed background causes rendering issues */
 @media (max-width: 768px) { body { background-attachment: scroll; } }
 
 /* Keep all direct children above the background */
 body > * { position: relative; z-index: 1; }
 
-/* ============ UI ============ */
+/* =====================================================
+   UI ELEMENTS
+   ===================================================== */
 .title { color: var(--title-text); margin-bottom: 4px; font-weight: 500; }
 .underline { width: 200px; height: 2px; background: var(--title-underline-bg); margin-bottom: 50px; }
+
 .main-button {
   display: block; margin: 150px auto; padding: 20px 80px;
   background: var(--button-bg); border: 2px solid var(--button-border);
@@ -172,7 +169,10 @@ body > * { position: relative; z-index: 1; }
   body { color: #ececec; }
 }
 
-/* ============ DRAGGABLE NAV ============ */
+/* =====================================================
+   DRAGGABLE NAV
+   Pick it up and drag it anywhere — it falls back on release.
+   ===================================================== */
 #draggableNav {
   position: absolute; left: 40px; top: 40px;
   background: rgba(0, 0, 0, 0.35);
@@ -188,7 +188,11 @@ body > * { position: relative; z-index: 1; }
 #draggableNav a { color: #fff; text-decoration: none; }
 #draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
 
-/* ============ LEFT PIPE (fixed overlay) ============ */
+/* =====================================================
+   PIPE (left column, fixed overlay via body::before)
+   Replace Pipe.png with your own sprite — adjust
+   --pipe-col-w and --pipe-native-h to match.
+   ===================================================== */
 body::before {
   content: "";
   position: fixed;
@@ -211,84 +215,57 @@ body::before {
   }
 }
 
-/* ============ SCENE FLOOR (textured) ============ */
-/* Fixed strip at the bottom — sits in front of the brick wall. */
+/* =====================================================
+   SCENE FLOOR
+   Fixed strip at the bottom — sits in front of the brick
+   wall. Place props (bins etc.) inside #scene-floor in
+   the HTML using position:absolute; bottom:0.
+   ===================================================== */
 #scene-floor {
   position: fixed;
   bottom: 0; left: 0;
   width: 100%;
   height: var(--floor-height);
-  z-index: 10; /* above brick wall, below pipe (999) and overlay (1000) */
-
-  /* Ground texture */
-  background-image: var(--ground-image);
-  background-repeat: repeat;
-  background-size: var(--ground-size) var(--ground-size);
-  background-position: top left;
-
-  /* Pixel-art crispness + fallback color */
-  image-rendering: pixelated;
   background-color: var(--floor-color);
+  z-index: 10; /* above brick wall (1), below pipe (999) and nav overlay (1000) */
 }
 
-/* NEW: Curb above the floor (top of the floor strip) */
-#scene-floor::before {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: calc(var(--curb-top-lip) + var(--curb-height));
-  z-index: 1; /* behind props, in front of ground texture */
-  background:
-    /* Top lip */
-    linear-gradient(0deg, var(--curb-top-color), var(--curb-top-color)) top / 100% var(--curb-top-lip) no-repeat,
-    /* Front face */
-    linear-gradient(0deg, var(--curb-face-color), var(--curb-face-color)) bottom / 100% var(--curb-height) no-repeat;
-  image-rendering: pixelated;
-}
-
-/* NEW: Shadow band where wall meets curb/floor */
-#scene-floor::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: var(--floor-top-shadow-height);
-  z-index: 2; /* above curb paint but still behind props */
-  background: linear-gradient(0deg, var(--floor-top-shadow), transparent);
-  pointer-events: none;
-}
-
-/* ============ SCENE PROPS (bins, objects on the floor) ============ */
-/* Your <img class="scene-prop" id="bin-main"> sits inside #scene-floor. */
+/* =====================================================
+   SCENE PROPS (bins, objects on the floor)
+   Add more by duplicating the <img class="scene-prop">
+   in the HTML and giving each a unique id with a
+   left/right position.
+   ===================================================== */
 .scene-prop {
   position: absolute;
-  bottom: 0;       /* anchors to the floor line */
-  height: 55vh;    /* taller than the floor so it overlaps up the wall */
+  bottom: 0;        /* anchors to the floor line */
+  height: 55vh;     /* taller than the floor so it overlaps up the wall */
   width: auto;
   object-fit: contain;
   object-position: bottom;
-  z-index: 3;      /* ensure props are in front of curb & shadow */
-  image-rendering: pixelated;
 }
 
 #bin-main {
   right: 2%;
-  height: 250%;
+  height:250%;
 }
 
-/* ============ MOUSE LIGHT OVERLAY (unchanged) ============ */
-/* Full-screen spotlight that follows the cursor (driven by JS). */
+/* =====================================================
+   MOUSE LIGHT OVERLAY
+   Full-screen spotlight that follows the cursor and
+   brightens everything beneath it — bricks, pipe, floor,
+   and any props. Driven by CSS variables updated by JS.
+   ===================================================== */
 #mouse-light-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000; /* above everything, including the pipe */
-  pointer-events: none; /* clicks pass through */
+  z-index: 1000;        /* above everything, including the pipe (999) */
+  pointer-events: none; /* clicks pass straight through */
   mix-blend-mode: screen;
-  /* The gradient center is driven by --mx/--my; intensity by --mouse-brightness */
-  /* NOTE: Color is set from JS variables in your current setup. */
   background: radial-gradient(
     circle at var(--mx) var(--my),
-    rgba(255, 220, 160, calc(var(--mouse-brightness) * 0.55)),
-    transparent 38%
+    rgba(var(--light-color), calc(var(--mouse-brightness) * var(--light-intensity))),
+    transparent var(--light-radius)
   );
 }
 
