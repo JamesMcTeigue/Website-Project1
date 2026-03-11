@@ -189,16 +189,25 @@ body > * { position: relative; z-index: 1; }
 #draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
 
 /* ============ LEFT PIPE (fixed overlay) ============ */
+/* ============ LEFT PIPE (fixed overlay) ============ */
+/* Stops at the curb by setting "bottom: var(--floor-height)" */
 body::before {
   content: "";
   position: fixed;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+
+  /* Instead of bottom: 0; we end at the top of the floor (curb) */
+  bottom: var(--floor-height);
+
   width: var(--pipe-col-w);
   z-index: 999;
+
   background-image: url("Pipe-2.png");
   background-repeat: repeat-y;
   background-position: left top;
   background-size: 100% var(--pipe-native-h);
+
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   pointer-events: none;
