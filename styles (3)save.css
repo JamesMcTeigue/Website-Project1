@@ -1,0 +1,394 @@
+/* =====================================================
+   SCENE STYLES — Brick wall + Left pipe + Textured floor
+   with a CURB LAYER above the floor.
+   ===================================================== */
+
+/* ============ KNOBS ============ */
+:root {
+  /* Brick wall */
+  --size-brick-width: 180px;
+  --size-brick-height: 72px;
+  --size-mortar-thickness: 12px;
+  --brick-grain-image: url("brick textuer-1.png");
+  --brick-grid-cols: 1;
+  --brick-grid-rows: 1;
+  --color-brick-base: #9a3d34;
+  --color-mortar: #c9c2b8;
+
+  /* Pixel art scale (1 = 64px tiles, 2 = 128px, 0.5 = 32px) */
+  --pixel-scale: 2.5;
+
+  /* Pipe (left vertical overlay) */
+  --pipe-col-w: 170px;      /* width of the pipe column */
+  --pipe-native-h: 224px;   /* native height of Pipe-2.png segment */
+
+  /* Floor (viewport strip) */
+  --floor-height: 28vh;     /* how tall the floor strip is */
+  --floor-color: #2a2a2a;   /* fallback color behind the ground texture */
+
+  /* NEW: Ground texture */
+  --ground-image: url("ground texture.png");
+  --ground-tile-px: 448px;  /* native size of your texture */
+  --ground-scale: 1;        /* 1 = 1:1 pixels; 0.5 = half; 2 = double */
+  --ground-size: calc(var(--ground-tile-px) * var(--ground-scale));
+
+  /* NEW: Curb (above the floor) */
+  --curb-top-lip: 6px;      /* thin upper ledge */
+  --curb-height: 26px;      /* front face height below the lip */
+  --curb-top-color: #c9c5bb;
+  --curb-face-color: #b7b2a9;
+
+  /* NEW: Shadow where wall meets curb/floor */
+  --floor-top-shadow: rgba(0, 0, 0, 0.45);
+  --floor-top-shadow-height: 42px;
+
+  /* JS-driven vars (mouse light + orbs) */
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --mouse-brightness-amount: 0;
+  --orb1-hue: 24;  --orb1-pos-x: 25%; --orb1-pos-y: 35%;
+  --orb2-hue: 210; --orb2-pos-x: 75%; --orb2-pos-y: 65%;
+  --orb3-hue: 120; --orb3-pos-x: 50%; --orb3-pos-y: 50%;
+
+  /* UI */
+  --title-text: #455dd7;
+  --title-underline-bg: #d7d7f5;
+  --button-bg: #e0fdff; --button-border: #c8eaff; --button-text: #15267a;
+  --button-hover-bg: #87ceeb; --button-hover-border: mediumpurple;
+}
+
+/* Internal shorthands */
+:root {
+  --brick-w: var(--size-brick-width);
+  --brick-h: var(--size-brick-height);
+  --mortar-t: var(--size-mortar-thickness);
+  --brick: var(--color-brick-base);
+  --mortar: var(--color-mortar);
+  --brick-grain-w: calc(64px * var(--pixel-scale));
+  --brick-grain-h: calc(64px * var(--pixel-scale));
+
+  --orb1-h: var(--orb1-hue); --orb1-x: var(--orb1-pos-x); --orb1-y: var(--orb1-pos-y);
+  --orb2-h: var(--orb2-hue); --orb2-x: var(--orb2-pos-x); --orb2-y: var(--orb2-pos-y);
+  --orb3-h: var(--orb3-hue); --orb3-x: var(--orb3-pos-x); --orb3-y: var(--orb3-pos-y);
+
+  --mx: var(--mouse-x); --my: var(--mouse-y); --mouse-brightness: var(--mouse-brightness-amount);
+}
+
+/* ============ BASE ============ */
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  padding: 40px;
+  padding-bottom: var(--floor-height); /* keep content above the floor strip */
+  font-family: Arial, sans-serif;
+  color: #f2f2f2;
+
+  /* Fallback solid color shown while images load */
+  background-color: #5b2b26;
+
+  /* BACKGROUND LAYERS (top → bottom)
+     1) Three colour orbs (JS animates positions)
+     2) Mortar pixel texture
+     3) Brick pixel texture
+     4) Horizontal mortar lines
+     5) Vertical mortar lines
+     6) Brick base fill
+  */
+  background-image:
+    url("mortar_tile.png"),
+    var(--brick-grain-image),
+    repeating-linear-gradient(
+      0deg,
+      var(--mortar) 0,
+      var(--mortar) var(--mortar-t),
+      transparent var(--mortar-t),
+      transparent var(--brick-h)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--mortar) 0,
+      var(--mortar) var(--mortar-t),
+      transparent var(--mortar-t),
+      transparent var(--brick-w)
+    ),
+    linear-gradient(0deg, var(--brick), var(--brick));
+
+  background-blend-mode:
+    multiply, /* mortar texture over mortar color */
+    multiply, /* brick texture over brick color */
+    normal,   /* horizontal mortar lines */
+    normal,   /* vertical mortar lines */
+    normal;   /* brick base */
+
+  background-size:
+    calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2), /* mortar texture tile */
+    calc(var(--brick-grain-w) * var(--brick-grid-cols)) calc(var(--brick-grain-h) * var(--brick-grid-rows)), /* brick texture tile */
+    100% var(--brick-h), /* horizontal mortar stripes */
+    var(--brick-w) 100%, /* vertical mortar stripes */
+    100% 100%;          /* brick base */
+
+  background-position:
+    0 0,    /* mortar texture */
+    0 0,    /* brick texture */
+    0 0,    /* horizontal mortar */
+    calc(var(--brick-w) / 2) 0, /* vertical mortar offset */
+    0 0;    /* brick base */
+
+  image-rendering: pixelated; /* keep textures crisp */
+  background-attachment: fixed;
+}
+
+/* On mobile, fixed background can hitch */
+@media (max-width: 768px) { body { background-attachment: scroll; } }
+
+/* Keep all direct children above the background */
+body > * { position: relative; z-index: 1; }
+
+/* ============ UI ============ */
+.title { color: var(--title-text); margin-bottom: 4px; font-weight: 500; }
+.underline { width: 200px; height: 2px; background: var(--title-underline-bg); margin-bottom: 50px; }
+.main-button {
+  display: block; margin: 150px auto; padding: 20px 80px;
+  background: var(--button-bg); border: 2px solid var(--button-border);
+  border-radius: 10px; font-size: 18px; color: var(--button-text);
+  cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease;
+}
+.main-button:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
+
+@media (prefers-color-scheme: dark) {
+  body { color: #ececec; }
+}
+
+/* ============ DRAGGABLE NAV ============ */
+#draggableNav {
+  position: absolute; left: 40px; top: 40px;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: grab; user-select: none;
+}
+#draggableNav.dragging { cursor: grabbing; }
+#draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
+#draggableNav a { color: #fff; text-decoration: none; }
+#draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
+
+/* ============ LEFT PIPE (fixed overlay) ============ */
+/* ============ LEFT PIPE (fixed overlay) ============ */
+/* Stops at the curb by setting "bottom: var(--floor-height)" */
+body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  /* Instead of bottom: 0; we end at the top of the floor (curb) */
+  bottom: var(--floor-height);
+
+  width: var(--pipe-col-w);
+  z-index: 999;
+
+  background-image: url("Pipe-2.png");
+  background-repeat: repeat-y;
+  background-position: left top;
+  background-size: 100% var(--pipe-native-h);
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+/* Push content clear of the pipe gutter */
+@media (min-width: 560px) {
+  header, nav, main, footer {
+    margin-left: calc(var(--pipe-col-w) + 12px);
+  }
+}
+
+/* ============ SCENE FLOOR (textured) ============ */
+/* Fixed strip at the bottom — sits in front of the brick wall. */
+#scene-floor {
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 100%;
+  height: var(--floor-height);
+  z-index: 10; /* above brick wall, below pipe (999) and overlay (1000) */
+
+  /* Ground texture */
+  background-image: var(--ground-image);
+  background-repeat: repeat;
+  background-size: var(--ground-size) var(--ground-size);
+  background-position: top left;
+
+  /* Pixel-art crispness + fallback color */
+  image-rendering: pixelated;
+  background-color: var(--floor-color);
+}
+
+/* NEW: Curb above the floor (top of the floor strip) */
+#scene-floor::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: calc(var(--curb-top-lip) + var(--curb-height));
+  z-index: 1; /* behind props, in front of ground texture */
+  background:
+    /* Top lip */
+    linear-gradient(0deg, var(--curb-top-color), var(--curb-top-color)) top / 100% var(--curb-top-lip) no-repeat,
+    /* Front face */
+    linear-gradient(0deg, var(--curb-face-color), var(--curb-face-color)) bottom / 100% var(--curb-height) no-repeat;
+  image-rendering: pixelated;
+}
+
+/* NEW: Shadow band where wall meets curb/floor */
+#scene-floor::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: var(--floor-top-shadow-height);
+  z-index: 2; /* above curb paint but still behind props */
+  background: linear-gradient(0deg, var(--floor-top-shadow), transparent);
+  pointer-events: none;
+}
+
+/* ============ SCENE PROPS (bins, objects on the floor) ============ */
+/* Your <img class="scene-prop" id="bin-main"> sits inside #scene-floor. */
+.scene-prop {
+  position: absolute;
+  bottom: 0;       /* anchors to the floor line */
+  height: 55vh;    /* taller than the floor so it overlaps up the wall */
+  width: auto;
+  object-fit: contain;
+  object-position: bottom;
+  z-index: 3;      /* ensure props are in front of curb & shadow */
+  image-rendering: pixelated;
+}
+
+#bin-main {
+  right: 2%;
+  height: 250%;
+}
+
+/* Placeholder image — bottom-left corner of the bin. Replace src later. */
+#bin-placeholder {
+  position: absolute;
+  bottom: 36px;             /* sits just above the floor/curb line */
+  right: calc(2% + 180px); /* nudged left of the bin */
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  z-index: 20;              /* above everything on the floor */
+  image-rendering: pixelated;
+  cursor: pointer;
+  opacity: 1;
+}
+#open-pipe-main {
+  /* No debug border */
+  height: 220px;
+  width: auto;
+  left: 0;
+  bottom: 0;
+  z-index: 15; /* above floor (10), curb (1-2), props (3) — sits in front of ground */
+  position: absolute;
+  image-rendering: pixelated;
+}
+
+
+/* ============ TORCH / FLASHLIGHT OVERLAY ============ */
+/*
+  Two layers stacked:
+  1) #torch-darkness  — near-black vignette that darkens everything except the beam
+  2) #mouse-light-overlay — warm tight cone of light centered on the cursor
+*/
+
+/* Darkness layer — covers the whole page with a dark vignette */
+#torch-darkness {
+  position: fixed;
+  inset: 0;
+  z-index: 999; /* just below the light cone */
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 320px 320px at var(--mx) var(--my),
+    transparent 0%,
+    rgba(0, 0, 0, 0.38) 55%,
+    rgba(0, 0, 0, 0.65) 100%
+  );
+  transition: background 0.05s linear;
+}
+
+/* Light cone — warm torch beam, tight and bright at center */
+#mouse-light-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    /* Tight hot-white core */
+    radial-gradient(
+      ellipse 80px 80px at var(--mx) var(--my),
+      rgba(255, 245, 210, 0.75),
+      transparent 100%
+    ),
+    /* Warm amber mid-beam */
+    radial-gradient(
+      ellipse 220px 220px at var(--mx) var(--my),
+      rgba(255, 200, 100, 0.45),
+      transparent 100%
+    ),
+    /* Outer soft falloff */
+    radial-gradient(
+      ellipse 380px 380px at var(--mx) var(--my),
+      rgba(255, 160, 60, 0.18),
+      transparent 100%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #mouse-light-overlay, #torch-darkness { display: none; }
+}
+
+
+
+/* === UI FIXES AND ADDITIONS === */
+#circle-buttons { z-index: 20; }
+#circle-buttons .circle-btn { position: fixed; background: transparent; border: 0; padding: 0; cursor: pointer; }
+#circle-buttons .circle-btn img { display: block; width: 72px; height: 72px; image-rendering: pixelated; }
+
+/* Approximate positions (tweak as needed) */
+#btn-white { left: calc(var(--pipe-col-w)); top: 72px; }
+#btn-blue { left: 34vw; top: 100px; }
+#btn-pink { left: 48vw; top: 180px; }
+#btn-red  { left: 70vw; top: 10px; }
+#btn-yellow { left: 28vw; top: 360px; }
+
+/* Vertical content bar hugging the pipe */
+#pipe-content-bar {
+  position: fixed;
+  top: 8px; bottom: var(--floor-height);
+  left: calc(var(--pipe-col-w) - 10px);
+  width: 56px; z-index: 1100;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 10px; padding: 6px 4px;
+  background: rgba(255,255,255,0.9);
+  border: 2px solid #e5e5e5; border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+}
+#pipe-content-bar * { margin: 0; }
+#pipe-content-bar .bar-icon { display:block; background: transparent; border: 0; padding: 0; cursor: pointer; }
+#pipe-content-bar .bar-icon img { display:block; width: 40px; height: 40px; image-rendering: pixelated; }
+#pipe-content-bar.hidden { display: none; }
+
+/* Panels above the curb */
+.panel { position: fixed; inset: 0 0 var(--floor-height) 0; z-index: 1200; background: rgba(10,10,10,0.85); color:#fff; display:none; }
+.panel.open { display:block; }
+.panel.panel-half { left:auto; width:50vw; }
+.panel .panel-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(0,0,0,0.4); border-bottom:1px solid rgba(255,255,255,0.2); }
+.panel .panel-body { padding:16px; }
+.panel .close-btn { background:transparent; border:0; cursor:pointer; }
+.panel .close-btn img { width:28px; height:28px; }
+
+/* Name label */
+#name-label { position: fixed; z-index: 1110; background:#a061cf; color:#fff; font:600 12px/1 Arial, sans-serif; padding:4px 8px; border:2px solid #2a0d4a; border-radius:10px; box-shadow:0 2px 0 rgba(0,0,0,0.25); }

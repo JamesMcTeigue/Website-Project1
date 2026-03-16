@@ -25,3 +25,13 @@ The left-side pipe renders via `body::before` using `Pipe.png`. Replace the file
 
 ## How to run
 No build step needed — open `index.html` directly in a browser, or use any static file server (e.g. VS Code Live Server).
+
+
+##16/03/2026
+PAIN
+
+additions of buttons in places 
+
+##17/03/2026
+moved to claud ai, much better
+chaged brightness of page and made light better

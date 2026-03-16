@@ -1,306 +1,516 @@
 /* =====================================================
-   SCENE STYLES — Brick wall + Left pipe + Textured floor
-   with a CURB LAYER above the floor.
+   THE ALLEYWAY — Main Stylesheet
+   
+   Z-INDEX SCALE (do not use values outside this plan)
+   -------------------------------------------------------
+    10  #scene-floor          (ground strip)
+    20  .scene-prop            (bin, pipe opening, floor objects)
+    30  body::before           (left pipe column)
+    40  #circle-buttons        (floating scene buttons)
+    50  #pipe-content-bar      (sidebar nav)
+    60  #draggableNav          (draggable home nav)
+    70  #name-label            (name tag near bin)
+   100  #torch-darkness        (darkens scene outside torch beam)
+   110  #mouse-light-overlay   (warm torch beam on top)
+   200  .panel                 (slide-in content panels, topmost)
+   -------------------------------------------------------
+   NOTE: image paths will move to /assets/ in a later pass.
    ===================================================== */
 
-/* ============ KNOBS ============ */
+
+/* ============================================================
+   1. DESIGN TOKENS  (edit here, everything else inherits)
+   ============================================================ */
 :root {
-  /* Brick wall */
-  --size-brick-width: 180px;
-  --size-brick-height: 72px;
-  --size-mortar-thickness: 12px;
-  --brick-grain-image: url("brick textuer-1.png");
-  --brick-grid-cols: 1;
-  --brick-grid-rows: 1;
-  --color-brick-base: #9a3d34;
-  --color-mortar: #c9c2b8;
+  /* --- Brick wall --- */
+  --brick-width:          180px;
+  --brick-height:          72px;
+  --mortar-thickness:      12px;
+  --brick-base-color:    #9a3d34;
+  --mortar-color:        #c9c2b8;
+  --brick-texture:       url("image/brick textuer-1.png");
+  --mortar-texture:      url("image/mortar_tile.png");
+  --pixel-scale:           2.5;   /* texture zoom: 1 = 64px, 2 = 128px */
 
-  /* Pixel art scale (1 = 64px tiles, 2 = 128px, 0.5 = 32px) */
-  --pixel-scale: 2.5;
+  /* --- Left pipe --- */
+  --pipe-width:           170px;  /* column width; also used for content margin */
+  --pipe-tile-height:     224px;  /* native height of Pipe-2.png tile */
 
-  /* Pipe (left vertical overlay) */
-  --pipe-col-w: 170px;      /* width of the pipe column */
-  --pipe-native-h: 224px;   /* native height of Pipe-2.png segment */
+  /* --- Floor strip --- */
+  --floor-height:          28vh;
+  --floor-color:         #2a2a2a;
+  --floor-texture:       url("image/ground texture.png");
+  --floor-texture-size:   448px;  /* native tile size */
 
-  /* Floor (viewport strip) */
-  --floor-height: 28vh;     /* how tall the floor strip is */
-  --floor-color: #2a2a2a;   /* fallback color behind the ground texture */
+  /* --- Curb (top edge of floor strip) --- */
+  --curb-lip:               6px;
+  --curb-face:             26px;
+  --curb-lip-color:      #c9c5bb;
+  --curb-face-color:     #b7b2a9;
+  --curb-shadow-color:   rgba(0, 0, 0, 0.45);
+  --curb-shadow-height:    42px;
 
-  /* NEW: Ground texture */
-  --ground-image: url("ground texture.png");
-  --ground-tile-px: 448px;  /* native size of your texture */
-  --ground-scale: 1;        /* 1 = 1:1 pixels; 0.5 = half; 2 = double */
-  --ground-size: calc(var(--ground-tile-px) * var(--ground-scale));
+  /* --- Torch / mouse light --- */
+  --mx: 50%;   /* updated by JS on pointermove */
+  --my: 50%;
 
-  /* NEW: Curb (above the floor) */
-  --curb-top-lip: 6px;      /* thin upper ledge */
-  --curb-height: 26px;      /* front face height below the lip */
-  --curb-top-color: #c9c5bb;
-  --curb-face-color: #b7b2a9;
+  /* --- UI palette --- */
+  --color-title:         #455dd7;
+  --color-underline:     #d7d7f5;
+  --color-btn-bg:        #e0fdff;
+  --color-btn-border:    #c8eaff;
+  --color-btn-text:      #15267a;
+  --color-btn-hover-bg:  #87ceeb;
+  --color-btn-hover-bdr: mediumpurple;
+  --color-name-bg:       #a061cf;
+  --color-name-border:   #2a0d4a;
 
-  /* NEW: Shadow where wall meets curb/floor */
-  --floor-top-shadow: rgba(0, 0, 0, 0.45);
-  --floor-top-shadow-height: 42px;
-
-  /* JS-driven vars (mouse light + orbs) */
-  --mouse-x: 50%;
-  --mouse-y: 50%;
-  --mouse-brightness-amount: 0;
-  --orb1-hue: 24;  --orb1-pos-x: 25%; --orb1-pos-y: 35%;
-  --orb2-hue: 210; --orb2-pos-x: 75%; --orb2-pos-y: 65%;
-  --orb3-hue: 120; --orb3-pos-x: 50%; --orb3-pos-y: 50%;
-
-  /* UI */
-  --title-text: #455dd7;
-  --title-underline-bg: #d7d7f5;
-  --button-bg: #e0fdff; --button-border: #c8eaff; --button-text: #15267a;
-  --button-hover-bg: #87ceeb; --button-hover-border: mediumpurple;
+  /* --- Internal shorthands (derived, don't edit directly) --- */
+  --brick-grain-size: calc(64px * var(--pixel-scale));
 }
 
-/* Internal shorthands */
-:root {
-  --brick-w: var(--size-brick-width);
-  --brick-h: var(--size-brick-height);
-  --mortar-t: var(--size-mortar-thickness);
-  --brick: var(--color-brick-base);
-  --mortar: var(--color-mortar);
-  --brick-grain-w: calc(64px * var(--pixel-scale));
-  --brick-grain-h: calc(64px * var(--pixel-scale));
 
-  --orb1-h: var(--orb1-hue); --orb1-x: var(--orb1-pos-x); --orb1-y: var(--orb1-pos-y);
-  --orb2-h: var(--orb2-hue); --orb2-x: var(--orb2-pos-x); --orb2-y: var(--orb2-pos-y);
-  --orb3-h: var(--orb3-hue); --orb3-x: var(--orb3-pos-x); --orb3-y: var(--orb3-pos-y);
+/* ============================================================
+   2. RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
 
-  --mx: var(--mouse-x); --my: var(--mouse-y); --mouse-brightness: var(--mouse-brightness-amount);
+html, body {
+  height: 100%;
+  margin: 0;
 }
-
-/* ============ BASE ============ */
-html, body { height: 100%; }
 
 body {
-  margin: 0;
   padding: 40px;
-  padding-bottom: var(--floor-height); /* keep content above the floor strip */
+  padding-left:   calc(var(--pipe-width) + 52px); /* clear the pipe */
+  padding-bottom: var(--floor-height);             /* clear the floor */
   font-family: Arial, sans-serif;
   color: #f2f2f2;
+  background-color: #5b2b26; /* fallback while textures load */
 
-  /* Fallback solid color shown while images load */
-  background-color: #5b2b26;
-
-  /* BACKGROUND LAYERS (top → bottom)
-     1) Three colour orbs (JS animates positions)
-     2) Mortar pixel texture
-     3) Brick pixel texture
-     4) Horizontal mortar lines
-     5) Vertical mortar lines
-     6) Brick base fill
-  */
+  /* BRICK WALL — layers listed top to bottom:
+     1. Mortar pixel texture  (multiply over mortar lines)
+     2. Brick grain texture   (multiply over brick base)
+     3. Horizontal mortar lines
+     4. Vertical mortar lines (offset half-brick for running bond)
+     5. Solid brick base fill */
   background-image:
-    radial-gradient(600px 600px at var(--orb1-x) var(--orb1-y), hsla(var(--orb1-h), 70%, 60%, 0.35), transparent 60%),
-    radial-gradient(800px 800px at var(--orb2-x) var(--orb2-y), hsla(var(--orb2-h), 70%, 60%, 0.30), transparent 65%),
-    radial-gradient(700px 700px at var(--orb3-x) var(--orb3-y), hsla(var(--orb3-h), 70%, 60%, 0.25), transparent 70%),
-    url("mortar_tile.png"),
-    var(--brick-grain-image),
+    var(--mortar-texture),
+    var(--brick-texture),
     repeating-linear-gradient(
       0deg,
-      var(--mortar) 0,
-      var(--mortar) var(--mortar-t),
-      transparent var(--mortar-t),
-      transparent var(--brick-h)
+      var(--mortar-color) 0,
+      var(--mortar-color) var(--mortar-thickness),
+      transparent         var(--mortar-thickness),
+      transparent         var(--brick-height)
     ),
     repeating-linear-gradient(
       90deg,
-      var(--mortar) 0,
-      var(--mortar) var(--mortar-t),
-      transparent var(--mortar-t),
-      transparent var(--brick-w)
+      var(--mortar-color) 0,
+      var(--mortar-color) var(--mortar-thickness),
+      transparent         var(--mortar-thickness),
+      transparent         var(--brick-width)
     ),
-    linear-gradient(0deg, var(--brick), var(--brick));
+    linear-gradient(var(--brick-base-color), var(--brick-base-color));
 
   background-blend-mode:
-    screen, /* orb 1 */
-    screen, /* orb 2 */
-    screen, /* orb 3 */
-    multiply, /* mortar texture over mortar color */
-    multiply, /* brick texture over brick color */
-    normal,   /* horizontal mortar lines */
-    normal,   /* vertical mortar lines */
-    normal;   /* brick base */
+    multiply,  /* mortar texture */
+    multiply,  /* brick texture  */
+    normal,    /* h-mortar lines */
+    normal,    /* v-mortar lines */
+    normal;    /* base fill      */
 
   background-size:
-    cover, /* orb 1 */
-    cover, /* orb 2 */
-    cover, /* orb 3 */
-    calc(var(--mortar-t) * 2) calc(var(--mortar-t) * 2), /* mortar texture tile */
-    calc(var(--brick-grain-w) * var(--brick-grid-cols)) calc(var(--brick-grain-h) * var(--brick-grid-rows)), /* brick texture tile */
-    100% var(--brick-h), /* horizontal mortar stripes */
-    var(--brick-w) 100%, /* vertical mortar stripes */
-    100% 100%;          /* brick base */
+    calc(var(--mortar-thickness) * 2) calc(var(--mortar-thickness) * 2),
+    var(--brick-grain-size) var(--brick-grain-size),
+    100%               var(--brick-height),
+    var(--brick-width) 100%,
+    100%               100%;
 
   background-position:
-    center, /* orb 1 */
-    center, /* orb 2 */
-    center, /* orb 3 */
-    0 0,    /* mortar texture */
-    0 0,    /* brick texture */
-    0 0,    /* horizontal mortar */
-    calc(var(--brick-w) / 2) 0, /* vertical mortar offset */
-    0 0;    /* brick base */
+    0 0,
+    0 0,
+    0 0,
+    calc(var(--brick-width) / 2) 0,  /* running-bond offset */
+    0 0;
 
-  image-rendering: pixelated; /* keep textures crisp */
+  image-rendering: pixelated;
   background-attachment: fixed;
 }
 
-/* On mobile, fixed background can hitch */
-@media (max-width: 768px) { body { background-attachment: scroll; } }
+/* Fixed bg can hitch on mobile */
+@media (max-width: 768px) {
+  body { background-attachment: scroll; }
+}
 
-/* Keep all direct children above the background */
-body > * { position: relative; z-index: 1; }
+/* Keyboard focus ring */
+:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
-/* ============ UI ============ */
-.title { color: var(--title-text); margin-bottom: 4px; font-weight: 500; }
-.underline { width: 200px; height: 2px; background: var(--title-underline-bg); margin-bottom: 50px; }
+/* Honour reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:  0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============================================================
+   3. PAGE CONTENT  (header / main / footer)
+   ============================================================ */
+.title {
+  color: var(--color-title);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.underline {
+  width: 200px;
+  height: 2px;
+  background: var(--color-underline);
+  margin-bottom: 50px;
+}
+
 .main-button {
-  display: block; margin: 150px auto; padding: 20px 80px;
-  background: var(--button-bg); border: 2px solid var(--button-border);
-  border-radius: 10px; font-size: 18px; color: var(--button-text);
-  cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease;
+  display: block;
+  margin: 150px auto;
+  padding: 20px 80px;
+  background: var(--color-btn-bg);
+  border: 2px solid var(--color-btn-border);
+  border-radius: 10px;
+  font-size: 18px;
+  color: var(--color-btn-text);
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
-.main-button:hover { background: var(--button-hover-bg); border-color: var(--button-hover-border); }
-
-@media (prefers-color-scheme: dark) {
-  body { color: #ececec; }
+.main-button:hover {
+  background: var(--color-btn-hover-bg);
+  border-color: var(--color-btn-hover-bdr);
 }
 
-/* ============ DRAGGABLE NAV ============ */
-#draggableNav {
-  position: absolute; left: 40px; top: 40px;
-  background: rgba(0, 0, 0, 0.35);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 10px 14px;
-  cursor: grab; user-select: none;
+footer {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  padding-top: 20px;
 }
-#draggableNav.dragging { cursor: grabbing; }
-#draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
-#draggableNav a { color: #fff; text-decoration: none; }
-#draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
 
-/* ============ LEFT PIPE (fixed overlay) ============ */
-/* ============ LEFT PIPE (fixed overlay) ============ */
-/* Stops at the curb by setting "bottom: var(--floor-height)" */
+
+/* ============================================================
+   4. LEFT PIPE  (z: 30)
+   ============================================================ */
 body::before {
   content: "";
   position: fixed;
   left: 0;
   top: 0;
+  bottom: var(--floor-height); /* stops at curb, not the floor texture */
+  width: var(--pipe-width);
+  z-index: 30;
+  pointer-events: none;
 
-  /* Instead of bottom: 0; we end at the top of the floor (curb) */
-  bottom: var(--floor-height);
-
-  width: var(--pipe-col-w);
-  z-index: 999;
-
-  background-image: url("Pipe-2.png");
+  background-image: url("image/Pipe-2.png");
   background-repeat: repeat-y;
   background-position: left top;
-  background-size: 100% var(--pipe-native-h);
+  background-size: 100% var(--pipe-tile-height);
 
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  pointer-events: none;
 }
 
-/* Push content clear of the pipe gutter */
-@media (min-width: 560px) {
-  header, nav, main, footer {
-    margin-left: calc(var(--pipe-col-w) + 12px);
-  }
-}
 
-/* ============ SCENE FLOOR (textured) ============ */
-/* Fixed strip at the bottom — sits in front of the brick wall. */
+/* ============================================================
+   5. DRAGGABLE NAV  (z: 60)
+   ============================================================ */
+#draggableNav {
+  position: fixed;
+  left: calc(var(--pipe-width) + 72px);  /* clears pipe (170px) + content bar (56px) + gap */
+  top: 16px;
+  z-index: 60;
+
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: grab;
+  user-select: none;
+}
+#draggableNav.dragging { cursor: grabbing; }
+
+#draggableNav ul {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  gap: 14px;
+}
+#draggableNav a { color: #fff; text-decoration: none; }
+#draggableNav a:hover,
+#draggableNav a:focus { text-decoration: underline; }
+
+
+/* ============================================================
+   6. SCENE FLOOR  (z: 10)
+   ============================================================ */
 #scene-floor {
   position: fixed;
   bottom: 0; left: 0;
   width: 100%;
   height: var(--floor-height);
-  z-index: 10; /* above brick wall, below pipe (999) and overlay (1000) */
+  z-index: 10;
 
-  /* Ground texture */
-  background-image: var(--ground-image);
+  background-image: var(--floor-texture);
   background-repeat: repeat;
-  background-size: var(--ground-size) var(--ground-size);
+  background-size: var(--floor-texture-size) var(--floor-texture-size);
   background-position: top left;
-
-  /* Pixel-art crispness + fallback color */
-  image-rendering: pixelated;
   background-color: var(--floor-color);
+  image-rendering: pixelated;
 }
 
-/* NEW: Curb above the floor (top of the floor strip) */
+/* Curb — top lip + front face */
 #scene-floor::before {
   content: "";
   position: absolute;
   left: 0; right: 0; top: 0;
-  height: calc(var(--curb-top-lip) + var(--curb-height));
-  z-index: 1; /* behind props, in front of ground texture */
+  height: calc(var(--curb-lip) + var(--curb-face));
+  z-index: 1;
   background:
-    /* Top lip */
-    linear-gradient(0deg, var(--curb-top-color), var(--curb-top-color)) top / 100% var(--curb-top-lip) no-repeat,
-    /* Front face */
-    linear-gradient(0deg, var(--curb-face-color), var(--curb-face-color)) bottom / 100% var(--curb-height) no-repeat;
+    linear-gradient(var(--curb-lip-color),  var(--curb-lip-color))
+      top    / 100% var(--curb-lip)  no-repeat,
+    linear-gradient(var(--curb-face-color), var(--curb-face-color))
+      bottom / 100% var(--curb-face) no-repeat;
   image-rendering: pixelated;
 }
 
-/* NEW: Shadow band where wall meets curb/floor */
+/* Shadow band at wall/floor junction */
 #scene-floor::after {
   content: "";
   position: absolute;
   left: 0; right: 0; top: 0;
-  height: var(--floor-top-shadow-height);
-  z-index: 2; /* above curb paint but still behind props */
-  background: linear-gradient(0deg, var(--floor-top-shadow), transparent);
+  height: var(--curb-shadow-height);
+  z-index: 2;
+  background: linear-gradient(var(--curb-shadow-color), transparent);
   pointer-events: none;
 }
 
-/* ============ SCENE PROPS (bins, objects on the floor) ============ */
-/* Your <img class="scene-prop" id="bin-main"> sits inside #scene-floor. */
+
+/* ============================================================
+   7. SCENE PROPS  (z: 20)
+   ============================================================ */
 .scene-prop {
   position: absolute;
-  bottom: 0;       /* anchors to the floor line */
-  height: 55vh;    /* taller than the floor so it overlaps up the wall */
+  bottom: 0;
   width: auto;
+  height: 55vh;
   object-fit: contain;
   object-position: bottom;
-  z-index: 3;      /* ensure props are in front of curb & shadow */
+  z-index: 20;
   image-rendering: pixelated;
 }
 
+/* Bin */
 #bin-main {
   right: 2%;
   height: 250%;
 }
 
-/* ============ MOUSE LIGHT OVERLAY (unchanged) ============ */
-/* Full-screen spotlight that follows the cursor (driven by JS). */
-#mouse-light-overlay {
+/* Pipe opening — sits at the base of the left pipe column */
+#open-pipe-main {
+  left: 0;
+  bottom: 0;
+  width: var(--pipe-width);   /* matches pipe column exactly */
+  height: auto;               /* scales proportionally */
+  max-height: 35%;            /* never taller than a third of the floor strip */
+  object-fit: contain;
+  object-position: bottom left;
+  z-index: 20;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Placeholder near bin — swap src when ready */
+#bin-placeholder {
+  position: absolute;
+  bottom: 36px;
+  right: calc(2% + 180px);
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  z-index: 20;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   8. CIRCLE BUTTONS  (z: 40)
+   ============================================================ */
+
+/* Full-viewport fixed layer — passes clicks through to the scene */
+#circle-buttons {
   position: fixed;
   inset: 0;
-  z-index: 1000; /* above everything, including the pipe */
-  pointer-events: none; /* clicks pass through */
-  mix-blend-mode: screen;
-  /* The gradient center is driven by --mx/--my; intensity by --mouse-brightness */
-  /* NOTE: Color is set from JS variables in your current setup. */
+  pointer-events: none;
+  z-index: 40;
+}
+
+#circle-buttons .circle-btn {
+  position: absolute;    /* positioned inside the fixed layer */
+  pointer-events: all;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+#circle-buttons .circle-btn img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+
+/* Button positions */
+#btn-white  { left: calc(var(--pipe-width) + 4px); top: 80px;  }
+#btn-blue   { left: 34vw;  top: 100px; }
+#btn-pink   { left: 48vw;  top: 180px; }
+#btn-red    { left: 70vw;  top: 10px;  }
+#btn-yellow { left: 28vw;  top: 360px; }
+
+
+/* ============================================================
+   9. PIPE CONTENT BAR  (z: 50)
+   ============================================================ */
+#pipe-content-bar {
+  position: fixed;
+  top: 8px;
+  bottom: var(--floor-height);
+  left: calc(var(--pipe-width) + 6px);  /* sits just to the RIGHT of the pipe */
+  width: 56px;
+  z-index: 50;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 6px 4px;
+
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+#pipe-content-bar .bar-icon {
+  display: block;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+#pipe-content-bar .bar-icon img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+}
+
+#pipe-content-bar.hidden { display: none; }
+
+
+/* ============================================================
+   10. NAME LABEL  (z: 70)
+   ============================================================ */
+#name-label {
+  position: fixed;
+  z-index: 70;
+  background: var(--color-name-bg);
+  color: #fff;
+  font: 600 12px/1 Arial, sans-serif;
+  padding: 4px 8px;
+  border: 2px solid var(--color-name-border);
+  border-radius: 10px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   11. TORCH EFFECT  (z: 100–110)
+   ============================================================ */
+
+/* Darkness vignette — everything outside the beam goes dark */
+#torch-darkness {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
   background: radial-gradient(
-    circle at var(--mx) var(--my),
-    rgba(255, 220, 160, calc(var(--mouse-brightness) * 0.55)),
-    transparent 38%
+    ellipse 320px 320px at var(--mx) var(--my),
+    transparent        0%,
+    rgba(0,0,0, 0.38) 55%,
+    rgba(0,0,0, 0.65) 100%
   );
 }
 
+/* Warm beam — screen blend brightens whatever the cursor touches */
+#mouse-light-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse  80px  80px at var(--mx) var(--my),
+      rgba(255, 245, 210, 0.75), transparent 100%),
+    radial-gradient(ellipse 220px 220px at var(--mx) var(--my),
+      rgba(255, 200, 100, 0.45), transparent 100%),
+    radial-gradient(ellipse 380px 380px at var(--mx) var(--my),
+      rgba(255, 160,  60, 0.18), transparent 100%);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  #torch-darkness,
   #mouse-light-overlay { display: none; }
 }
+
+
+/* ============================================================
+   12. PANELS  (z: 200)
+   ============================================================ */
+.panel {
+  position: fixed;
+  inset: 0 0 var(--floor-height) 0;
+  z-index: 200;
+  display: none;
+  background: rgba(10, 10, 10, 0.88);
+  color: #fff;
+}
+
+.panel.open { display: block; }
+
+/* Info panel — right half only */
+.panel.panel-half {
+  left: auto;
+  width: 50vw;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.panel-body { padding: 16px; }
+
+.close-btn {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.close-btn img { width: 28px; height: 28px; }
