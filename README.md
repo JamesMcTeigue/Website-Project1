@@ -35,3 +35,6 @@ additions of buttons in places
 ##17/03/2026
 moved to claud ai, much better
 chaged brightness of page and made light better
+
+##19/03/2026
+made an attempt to make the wbesite uniform across screens, first and second attemps have failed moveing to third
