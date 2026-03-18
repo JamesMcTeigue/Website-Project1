@@ -1,72 +1,68 @@
 /* =====================================================
    THE ALLEYWAY — Main Stylesheet
-   
-   Z-INDEX SCALE (do not use values outside this plan)
+
+   Z-INDEX SCALE
    -------------------------------------------------------
-    10  #scene-floor          (ground strip)
-    20  .scene-prop            (bin, pipe opening, floor objects)
-    30  body::before           (left pipe column)
-    40  #circle-buttons        (floating scene buttons)
-    50  #pipe-content-bar      (sidebar nav)
-    60  #draggableNav          (draggable home nav)
-    70  #name-label            (name tag near bin)
-   100  #torch-darkness        (darkens scene outside torch beam)
-   110  #mouse-light-overlay   (warm torch beam on top)
-   200  .panel                 (slide-in content panels, topmost)
-   -------------------------------------------------------
-   NOTE: image paths will move to /assets/ in a later pass.
+    10  #scene-floor
+    20  .scene-prop  (bin, pipe opening)
+    30  body::before (left pipe)
+    40  #circle-buttons
+    50  #pipe-content-bar
+    60  #draggableNav
+    70  #name-label
+   100  #torch-darkness
+   110  #mouse-light-overlay
+   200  .panel
    ===================================================== */
 
 
 /* ============================================================
-   1. DESIGN TOKENS  (edit here, everything else inherits)
+   1. DESIGN TOKENS
    ============================================================ */
 :root {
-  /* --- Brick wall --- */
-  --brick-width:          180px;
-  --brick-height:          72px;
-  --mortar-thickness:      12px;
-  --brick-base-color:    #9a3d34;
-  --mortar-color:        #c9c2b8;
-  --brick-texture:       url("image/brick textuer-1.png");
-  --mortar-texture:      url("image/mortar_tile.png");
-  --pixel-scale:           2.5;   /* texture zoom: 1 = 64px, 2 = 128px */
+  /* Brick wall */
+  --brick-width:         180px;
+  --brick-height:         72px;
+  --mortar-thickness:     12px;
+  --brick-base-color:   #9a3d34;
+  --mortar-color:       #c9c2b8;
+  --brick-texture:      url("image/brick textuer-1.png");
+  --mortar-texture:     url("image/mortar_tile.png");
+  --pixel-scale:          2.5;
+  --brick-grain-size:   calc(64px * var(--pixel-scale));
 
-  /* --- Left pipe --- */
-  --pipe-width:           170px;  /* column width; also used for content margin */
-  --pipe-tile-height:     224px;  /* native height of Pipe-2.png tile */
+  /* Left pipe */
+  --pipe-width:          170px;
+  --pipe-tile-height:    224px;
 
-  /* --- Floor strip --- */
-  --floor-height:          28vh;
-  --floor-color:         #2a2a2a;
-  --floor-texture:       url("image/ground texture.png");
-  --floor-texture-size:   448px;  /* native tile size */
+  /* Floor — fixed px so it never changes with viewport height */
+  --floor-height:        220px;
+  --floor-color:        #2a2a2a;
+  --floor-texture:      url("image/ground texture.png");
+  --floor-texture-size:  448px;
 
-  /* --- Curb (top edge of floor strip) --- */
-  --curb-lip:               6px;
-  --curb-face:             26px;
-  --curb-lip-color:      #c9c5bb;
-  --curb-face-color:     #b7b2a9;
-  --curb-shadow-color:   rgba(0, 0, 0, 0.45);
-  --curb-shadow-height:    42px;
+  /* Curb */
+  --curb-lip:              6px;
+  --curb-face:            26px;
+  --curb-lip-color:     #c9c5bb;
+  --curb-face-color:    #b7b2a9;
+  --curb-shadow-color:  rgba(0,0,0,0.45);
+  --curb-shadow-height:   42px;
 
-  /* --- Torch / mouse light --- */
-  --mx: 50%;   /* updated by JS on pointermove */
+  /* Torch (updated by JS) */
+  --mx: 50%;
   --my: 50%;
 
-  /* --- UI palette --- */
-  --color-title:         #455dd7;
-  --color-underline:     #d7d7f5;
-  --color-btn-bg:        #e0fdff;
-  --color-btn-border:    #c8eaff;
-  --color-btn-text:      #15267a;
-  --color-btn-hover-bg:  #87ceeb;
+  /* UI palette */
+  --color-title:        #455dd7;
+  --color-underline:    #d7d7f5;
+  --color-btn-bg:       #e0fdff;
+  --color-btn-border:   #c8eaff;
+  --color-btn-text:     #15267a;
+  --color-btn-hover-bg: #87ceeb;
   --color-btn-hover-bdr: mediumpurple;
-  --color-name-bg:       #a061cf;
-  --color-name-border:   #2a0d4a;
-
-  /* --- Internal shorthands (derived, don't edit directly) --- */
-  --brick-grain-size: calc(64px * var(--pixel-scale));
+  --color-name-bg:      #a061cf;
+  --color-name-border:  #2a0d4a;
 }
 
 
@@ -82,91 +78,64 @@ html, body {
 
 body {
   padding: 40px;
-  padding-left:   calc(var(--pipe-width) + 52px); /* clear the pipe */
-  padding-bottom: var(--floor-height);             /* clear the floor */
+  padding-left:   calc(var(--pipe-width) + 72px);
+  padding-bottom: var(--floor-height);
   font-family: Arial, sans-serif;
   color: #f2f2f2;
-  background-color: #5b2b26; /* fallback while textures load */
+  background-color: #5b2b26;
 
-  /* BRICK WALL — layers listed top to bottom:
-     1. Mortar pixel texture  (multiply over mortar lines)
-     2. Brick grain texture   (multiply over brick base)
-     3. Horizontal mortar lines
-     4. Vertical mortar lines (offset half-brick for running bond)
-     5. Solid brick base fill */
   background-image:
     var(--mortar-texture),
     var(--brick-texture),
     repeating-linear-gradient(
       0deg,
-      var(--mortar-color) 0,
-      var(--mortar-color) var(--mortar-thickness),
-      transparent         var(--mortar-thickness),
-      transparent         var(--brick-height)
+      var(--mortar-color) 0, var(--mortar-color) var(--mortar-thickness),
+      transparent var(--mortar-thickness), transparent var(--brick-height)
     ),
     repeating-linear-gradient(
       90deg,
-      var(--mortar-color) 0,
-      var(--mortar-color) var(--mortar-thickness),
-      transparent         var(--mortar-thickness),
-      transparent         var(--brick-width)
+      var(--mortar-color) 0, var(--mortar-color) var(--mortar-thickness),
+      transparent var(--mortar-thickness), transparent var(--brick-width)
     ),
     linear-gradient(var(--brick-base-color), var(--brick-base-color));
 
-  background-blend-mode:
-    multiply,  /* mortar texture */
-    multiply,  /* brick texture  */
-    normal,    /* h-mortar lines */
-    normal,    /* v-mortar lines */
-    normal;    /* base fill      */
+  background-blend-mode: multiply, multiply, normal, normal, normal;
 
   background-size:
     calc(var(--mortar-thickness) * 2) calc(var(--mortar-thickness) * 2),
     var(--brick-grain-size) var(--brick-grain-size),
-    100%               var(--brick-height),
+    100% var(--brick-height),
     var(--brick-width) 100%,
-    100%               100%;
+    100% 100%;
 
   background-position:
-    0 0,
-    0 0,
-    0 0,
-    calc(var(--brick-width) / 2) 0,  /* running-bond offset */
+    0 0, 0 0, 0 0,
+    calc(var(--brick-width) / 2) 0,
     0 0;
 
   image-rendering: pixelated;
   background-attachment: fixed;
 }
 
-/* Fixed bg can hitch on mobile */
-@media (max-width: 768px) {
-  body { background-attachment: scroll; }
-}
+@media (max-width: 768px) { body { background-attachment: scroll; } }
 
-/* Keyboard focus ring */
 :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
-/* Honour reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration:  0.01ms !important;
+    animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }
 
 
 /* ============================================================
-   3. PAGE CONTENT  (header / main / footer)
+   3. PAGE CONTENT
    ============================================================ */
-.title {
-  color: var(--color-title);
-  margin-bottom: 4px;
-  font-weight: 500;
-}
+.title { color: var(--color-title); margin-bottom: 4px; font-weight: 500; }
 
 .underline {
-  width: 200px;
-  height: 2px;
+  width: 200px; height: 2px;
   background: var(--color-underline);
   margin-bottom: 50px;
 }
@@ -188,11 +157,7 @@ body {
   border-color: var(--color-btn-hover-bdr);
 }
 
-footer {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-  padding-top: 20px;
-}
+footer { color: rgba(255,255,255,0.5); font-size: 12px; padding-top: 20px; }
 
 
 /* ============================================================
@@ -201,18 +166,14 @@ footer {
 body::before {
   content: "";
   position: fixed;
-  left: 0;
-  top: 0;
-  bottom: var(--floor-height); /* stops at curb, not the floor texture */
+  left: 0; top: 0;
+  bottom: var(--floor-height);
   width: var(--pipe-width);
   z-index: 30;
   pointer-events: none;
-
   background-image: url("image/Pipe-2.png");
   background-repeat: repeat-y;
-  background-position: left top;
   background-size: 100% var(--pipe-tile-height);
-
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -223,30 +184,22 @@ body::before {
    ============================================================ */
 #draggableNav {
   position: fixed;
-  left: calc(var(--pipe-width) + 72px);  /* clears pipe (170px) + content bar (56px) + gap */
+  left: calc(var(--pipe-width) + 72px);
   top: 16px;
   z-index: 60;
-
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px;
   padding: 10px 14px;
   cursor: grab;
   user-select: none;
 }
 #draggableNav.dragging { cursor: grabbing; }
-
-#draggableNav ul {
-  list-style: none;
-  margin: 0; padding: 0;
-  display: flex;
-  gap: 14px;
-}
+#draggableNav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }
 #draggableNav a { color: #fff; text-decoration: none; }
-#draggableNav a:hover,
-#draggableNav a:focus { text-decoration: underline; }
+#draggableNav a:hover, #draggableNav a:focus { text-decoration: underline; }
 
 
 /* ============================================================
@@ -258,16 +211,13 @@ body::before {
   width: 100%;
   height: var(--floor-height);
   z-index: 10;
-
   background-image: var(--floor-texture);
   background-repeat: repeat;
   background-size: var(--floor-texture-size) var(--floor-texture-size);
-  background-position: top left;
   background-color: var(--floor-color);
   image-rendering: pixelated;
 }
 
-/* Curb — top lip + front face */
 #scene-floor::before {
   content: "";
   position: absolute;
@@ -275,14 +225,12 @@ body::before {
   height: calc(var(--curb-lip) + var(--curb-face));
   z-index: 1;
   background:
-    linear-gradient(var(--curb-lip-color),  var(--curb-lip-color))
-      top    / 100% var(--curb-lip)  no-repeat,
+    linear-gradient(var(--curb-lip-color), var(--curb-lip-color))
+      top / 100% var(--curb-lip) no-repeat,
     linear-gradient(var(--curb-face-color), var(--curb-face-color))
       bottom / 100% var(--curb-face) no-repeat;
-  image-rendering: pixelated;
 }
 
-/* Shadow band at wall/floor junction */
 #scene-floor::after {
   content: "";
   position: absolute;
@@ -301,26 +249,22 @@ body::before {
   position: absolute;
   bottom: 0;
   width: auto;
-  height: 55vh;
   object-fit: contain;
   object-position: bottom;
   z-index: 20;
   image-rendering: pixelated;
 }
 
-/* Bin */
 #bin-main {
-  right: 2%;
-  height: 250%;
+  right: 30px;
+  height: 480px;
 }
 
-/* Pipe opening — sits at the base of the left pipe column */
 #open-pipe-main {
-  left: 0;
-  bottom: 0;
-  width: var(--pipe-width);   /* matches pipe column exactly */
-  height: auto;               /* scales proportionally */
-  max-height: 35%;            /* never taller than a third of the floor strip */
+  left: 0; bottom: 0;
+  width: var(--pipe-width);
+  height: auto;
+  max-height: 88px;
   object-fit: contain;
   object-position: bottom left;
   z-index: 20;
@@ -328,13 +272,11 @@ body::before {
   image-rendering: crisp-edges;
 }
 
-/* Placeholder near bin — swap src when ready */
 #bin-placeholder {
   position: absolute;
   bottom: 36px;
-  right: calc(2% + 180px);
-  width: 80px;
-  height: 80px;
+  right: 220px;
+  width: 80px; height: 80px;
   object-fit: contain;
   z-index: 20;
   image-rendering: pixelated;
@@ -345,8 +287,6 @@ body::before {
 /* ============================================================
    8. CIRCLE BUTTONS  (z: 40)
    ============================================================ */
-
-/* Full-viewport fixed layer — passes clicks through to the scene */
 #circle-buttons {
   position: fixed;
   inset: 0;
@@ -355,27 +295,25 @@ body::before {
 }
 
 #circle-buttons .circle-btn {
-  position: absolute;    /* positioned inside the fixed layer */
+  position: absolute;
   pointer-events: all;
   background: transparent;
-  border: 0;
-  padding: 0;
+  border: 0; padding: 0;
   cursor: pointer;
 }
 
 #circle-buttons .circle-btn img {
   display: block;
-  width: 72px;
-  height: 72px;
+  width: 72px; height: 72px;
   image-rendering: pixelated;
 }
 
-/* Button positions */
-#btn-white  { left: calc(var(--pipe-width) + 4px); top: 80px;  }
-#btn-blue   { left: 34vw;  top: 100px; }
-#btn-pink   { left: 48vw;  top: 180px; }
-#btn-red    { left: 70vw;  top: 10px;  }
-#btn-yellow { left: 28vw;  top: 360px; }
+/* Positions use fixed px so they never shift with window size */
+#btn-white  { left: calc(var(--pipe-width) + 4px); top:  80px; }
+#btn-blue   { left: 490px;  top: 100px; }
+#btn-pink   { left: 690px;  top: 185px; }
+#btn-red    { right: 60px;  top:  10px; }
+#btn-yellow { left: 400px;  top: 360px; }
 
 
 /* ============================================================
@@ -385,35 +323,31 @@ body::before {
   position: fixed;
   top: 8px;
   bottom: var(--floor-height);
-  left: calc(var(--pipe-width) + 6px);  /* sits just to the RIGHT of the pipe */
+  left: calc(var(--pipe-width) + 6px);
   width: 56px;
   z-index: 50;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
   padding: 6px 4px;
-
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255,255,255,0.9);
   border: 2px solid #e5e5e5;
   border-radius: 12px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
 }
 
 #pipe-content-bar .bar-icon {
   display: block;
   background: transparent;
-  border: 0;
-  padding: 0;
+  border: 0; padding: 0;
   cursor: pointer;
 }
 
 #pipe-content-bar .bar-icon img {
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   image-rendering: pixelated;
 }
 
@@ -432,7 +366,7 @@ body::before {
   padding: 4px 8px;
   border: 2px solid var(--color-name-border);
   border-radius: 10px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
   pointer-events: none;
 }
 
@@ -440,8 +374,6 @@ body::before {
 /* ============================================================
    11. TORCH EFFECT  (z: 100–110)
    ============================================================ */
-
-/* Darkness vignette — everything outside the beam goes dark */
 #torch-darkness {
   position: fixed;
   inset: 0;
@@ -449,13 +381,12 @@ body::before {
   pointer-events: none;
   background: radial-gradient(
     ellipse 320px 320px at var(--mx) var(--my),
-    transparent        0%,
-    rgba(0,0,0, 0.38) 55%,
-    rgba(0,0,0, 0.65) 100%
+    transparent 0%,
+    rgba(0,0,0,0.38) 55%,
+    rgba(0,0,0,0.65) 100%
   );
 }
 
-/* Warm beam — screen blend brightens whatever the cursor touches */
 #mouse-light-overlay {
   position: fixed;
   inset: 0;
@@ -463,17 +394,13 @@ body::before {
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    radial-gradient(ellipse  80px  80px at var(--mx) var(--my),
-      rgba(255, 245, 210, 0.75), transparent 100%),
-    radial-gradient(ellipse 220px 220px at var(--mx) var(--my),
-      rgba(255, 200, 100, 0.45), transparent 100%),
-    radial-gradient(ellipse 380px 380px at var(--mx) var(--my),
-      rgba(255, 160,  60, 0.18), transparent 100%);
+    radial-gradient(ellipse  80px  80px at var(--mx) var(--my), rgba(255,245,210,0.75), transparent 100%),
+    radial-gradient(ellipse 220px 220px at var(--mx) var(--my), rgba(255,200,100,0.45), transparent 100%),
+    radial-gradient(ellipse 380px 380px at var(--mx) var(--my), rgba(255,160, 60,0.18), transparent 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #torch-darkness,
-  #mouse-light-overlay { display: none; }
+  #torch-darkness, #mouse-light-overlay { display: none; }
 }
 
 
@@ -485,32 +412,23 @@ body::before {
   inset: 0 0 var(--floor-height) 0;
   z-index: 200;
   display: none;
-  background: rgba(10, 10, 10, 0.88);
+  background: rgba(10,10,10,0.88);
   color: #fff;
 }
 
 .panel.open { display: block; }
-
-/* Info panel — right half only */
-.panel.panel-half {
-  left: auto;
-  width: 50vw;
-}
+.panel.panel-half { left: auto; width: 50%; }
 
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 .panel-body { padding: 16px; }
 
-.close-btn {
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
+.close-btn { background: transparent; border: 0; cursor: pointer; }
 .close-btn img { width: 28px; height: 28px; }

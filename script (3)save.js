@@ -1,179 +1,247 @@
+/* =====================================================
+   THE ALLEYWAY — Main Script
+   
+   Sections:
+   1. Torch light  (mouse → CSS vars --mx / --my)
+   2. Draggable nav
+   3. Panel controller  (open / close / Esc)
+   4. Name label sync   (follows bin position)
+   5. Misc init         (year, placeholder button)
+   ===================================================== */
 
-// Button click handler
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('myButton');
-  if (btn) {
-    btn.addEventListener('click', () => alert('Button clicked!'));
-  }
-});
+'use strict';
 
-// === Torch light: track mouse → update --mx / --my on :root ===
-(function () {
-  const root = document.documentElement;
-  const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* ── Helpers ─────────────────────────────────────── */
+const qs  = (sel, root = document) => root.querySelector(sel);
+const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const px  = n  => `${n}px`;
+const num = v  => parseFloat(String(v)) || 0;
+const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+
+/* ============================================================
+   1. TORCH LIGHT
+   Writes --mx / --my to :root so the CSS gradients follow
+   the cursor with zero JS layout work each frame.
+   ============================================================ */
+(function initTorch() {
   if (reduced) return;
+  const root = document.documentElement;
 
   function update(clientX, clientY) {
-    const vw = window.innerWidth  || document.documentElement.clientWidth;
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    root.style.setProperty('--mouse-x', ((clientX / vw) * 100).toFixed(2) + '%');
-    root.style.setProperty('--mouse-y', ((clientY / vh) * 100).toFixed(2) + '%');
-    root.style.setProperty('--mx', root.style.getPropertyValue('--mouse-x'));
-    root.style.setProperty('--my', root.style.getPropertyValue('--mouse-y'));
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const mx = ((clientX / vw) * 100).toFixed(2) + '%';
+    const my = ((clientY / vh) * 100).toFixed(2) + '%';
+    root.style.setProperty('--mx', mx);
+    root.style.setProperty('--my', my);
   }
 
   window.addEventListener('pointermove', e => update(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('touchmove',   e => { const t = e.touches[0]; if (t) update(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) update(t.clientX, t.clientY);
+  }, { passive: true });
 })();
 
-// === Draggable + Gravity for NAV (unchanged logic, now uses Pointer Events) ===
-(function () {
-  const el = document.getElementById('draggableNav') || document.querySelector('nav');
+
+/* ============================================================
+   2. DRAGGABLE NAV
+   The nav is position:fixed, so all coords are viewport-relative.
+   On release it falls with gravity then snaps back to its
+   original position.
+   ============================================================ */
+(function initDraggableNav() {
+  const el = document.getElementById('draggableNav');
   if (!el) return;
 
-  let dragging = false, isFalling = false;
-  let startX = 0, startY = 0, startLeft = 0, startTop = 0;
-  let originalLeft = null, originalTop = null;
-  let fallStart = 0, velocity = 0;
-  const gravity = 0.003; // px/ms^2
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  /* Store the CSS-defined home position once, on first drag */
+  let homeLeft = null;
+  let homeTop  = null;
 
-  const px = n => `${n}px`;
-  const num = v => parseFloat(String(v).replace('px','')) || 0;
+  let dragging  = false;
+  let isFalling = false;
+  let startClientX = 0, startClientY = 0;
+  let startLeft    = 0, startTop     = 0;
+  let velocity = 0;
+  let fallTs   = 0;
+  const GRAVITY = 0.003; // px / ms²
 
-  function normalize() {
-    const cs = getComputedStyle(el);
-    if (cs.position !== 'absolute') el.style.position = 'absolute';
+  function captureHome() {
+    if (homeLeft !== null) return;
     const r = el.getBoundingClientRect();
-    const docLeft = scrollX + r.left, docTop = scrollY + r.top;
-    if (cs.left === 'auto') el.style.left = px(docLeft);
-    if (cs.top  === 'auto') el.style.top  = px(docTop);
-    if (originalLeft == null || originalTop == null) {
-      originalLeft = num(el.style.left); originalTop = num(el.style.top);
+    homeLeft = r.left;
+    homeTop  = r.top;
+    /* Switch to explicit px values so JS can move it */
+    el.style.left = px(r.left);
+    el.style.top  = px(r.top);
+  }
+
+  /* ── drag start ── */
+  function onDown(e) {
+    if (isFalling) return;
+    captureHome();
+    const p = e.touches?.[0] ?? e;
+    dragging = true;
+    el.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    startClientX = p.clientX;
+    startClientY = p.clientY;
+    startLeft    = num(el.style.left);
+    startTop     = num(el.style.top);
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup',   onUp);
+  }
+
+  /* ── drag move ── */
+  function onMove(e) {
+    if (!dragging) return;
+    if (e.cancelable) e.preventDefault();
+    const p = e.touches?.[0] ?? e;
+    el.style.left = px(startLeft + (p.clientX - startClientX));
+    el.style.top  = px(startTop  + (p.clientY - startClientY));
+  }
+
+  /* ── drag end → fall ── */
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup',   onUp);
+    startFall();
+  }
+
+  /* ── gravity fall ── */
+  function startFall() {
+    if (isFalling) return;
+    isFalling = true;
+    velocity  = 0;
+    fallTs    = performance.now();
+
+    if (reduced) {
+      snapHome();
+      return;
+    }
+    requestAnimationFrame(fallStep);
+  }
+
+  function fallStep(now) {
+    if (!isFalling) return;
+    const dt        = Math.min(1000 / 60, now - fallTs);
+    fallTs          = now;
+    velocity       += GRAVITY * dt;
+    const nextTop   = num(el.style.top) + velocity * dt;
+    /* Floor = viewport height minus element height */
+    const floorTop  = window.innerHeight - el.getBoundingClientRect().height;
+
+    if (nextTop >= floorTop) {
+      el.style.top = px(floorTop);
+      bounce();
+    } else {
+      el.style.top = px(nextTop);
+      requestAnimationFrame(fallStep);
     }
   }
-  const viewportBottom = () => scrollY + document.documentElement.clientHeight;
-  const elementHeight  = () => el.getBoundingClientRect().height;
 
-  function onStart(e) {
-    if (isFalling) return;
-    const p = e.touches?.[0] ?? e;
-    normalize();
-    dragging = true; el.classList.add('dragging'); document.body.style.userSelect = 'none';
-    startX = p.clientX; startY = p.clientY; startLeft = num(el.style.left); startTop = num(el.style.top);
-    window.addEventListener('pointermove', onMove, { passive: false });
-    window.addEventListener('pointerup', onEnd, { passive: true });
-    window.addEventListener('mousemove', onMove, { passive: false });
-    window.addEventListener('mouseup', onEnd, { passive: true });
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('touchend', onEnd, { passive: true });
-  }
-  function onMove(e) {
-    if (!dragging || isFalling) return;
-    const p = e.touches?.[0] ?? e; if (!p) return;
-    if (e.cancelable) e.preventDefault();
-    el.style.left = px(startLeft + (p.clientX - startX));
-    el.style.top  = px(startTop  + (p.clientY - startY));
-  }
-  function onEnd() {
-    if (!dragging) return; dragging = false; el.classList.remove('dragging'); document.body.style.userSelect = '';
-    startFall();
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onEnd);
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onEnd);
-    window.removeEventListener('touchmove', onMove);
-    window.removeEventListener('touchend', onEnd);
+  function bounce() {
+    el.animate(
+      [{ transform: 'translateY(0)' }, { transform: 'translateY(-16px)' }, { transform: 'translateY(0)' }],
+      { duration: 150, easing: 'ease-out' }
+    ).finished.finally(snapHome);
   }
 
-  function startFall() {
-    if (isFalling) return; isFalling = true; velocity = 0; fallStart = performance.now();
-    if (reduced) { el.style.left = px(originalLeft); el.style.top = px(originalTop); isFalling = false; return; }
-    requestAnimationFrame(step);
-  }
-  function step(now) {
-    if (!isFalling) return;
-    const dt = Math.min(1000/60, now - fallStart); fallStart = now;
-    const limitTop = viewportBottom() - elementHeight();
-    const currentTop = num(el.style.top);
-    velocity += gravity * dt; let nextTop = currentTop + velocity * dt;
-    if (nextTop >= limitTop) { el.style.top = px(limitTop); bounceAndReset(); }
-    else { el.style.top = px(nextTop); requestAnimationFrame(step); }
-  }
-  function bounceAndReset() {
-    const bounce = 16, t = 150;
-    el.animate([{transform:'translateY(0)'},{transform:`translateY(-${bounce}px)`},{transform:'translateY(0)'}],{duration:t,easing:'ease-out'})
-      .finished.finally(()=>{ el.style.left = px(originalLeft); el.style.top = px(originalTop); isFalling = false; });
+  function snapHome() {
+    el.style.left = px(homeLeft);
+    el.style.top  = px(homeTop);
+    isFalling = false;
   }
 
-  el.addEventListener('pointerdown', onStart, { passive: true });
-  el.addEventListener('mousedown', onStart, { passive: true });
-  el.addEventListener('touchstart', onStart, { passive: true });
+  el.addEventListener('pointerdown', onDown, { passive: true });
+  el.addEventListener('touchstart',  onDown, { passive: true });
 })();
 
 
-
-// === Overlay / Panel controller ===
+/* ============================================================
+   3. PANEL CONTROLLER + 4. NAME LABEL + 5. MISC INIT
+   Everything that needs the DOM ready lives in one listener.
+   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-  const qs = (s, r=document) => r.querySelector(s);
-  const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+  /* ── 3. Panels ─────────────────────────────────── */
   const contentBar = qs('#pipe-content-bar');
 
-  function openPanel(sel) {
-    const p = qs(sel);
-    if (!p) return;
-    p.classList.add('open');
-    p.setAttribute('aria-hidden','false');
-    const close = p.querySelector('.close-btn');
-    if (close) close.focus();
-  }
-  function closePanel(p) {
-    p.classList.remove('open');
-    p.setAttribute('aria-hidden','true');
+  function openPanel(selector) {
+    const panel = qs(selector);
+    if (!panel) return;
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    qs('.close-btn', panel)?.focus();
   }
 
-  // Wire circle buttons
+  function closePanel(panel) {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+
+  /* Circle buttons */
   qsa('#circle-buttons .circle-btn').forEach(btn => {
-    const target = btn.getAttribute('data-target');
-    const toggleBar = btn.hasAttribute('data-toggle-contentbar');
     btn.addEventListener('click', () => {
-      if (toggleBar) {
-        if (contentBar) contentBar.classList.toggle('hidden');
-      } else if (target) {
-        openPanel(target);
+      if (btn.hasAttribute('data-toggle-contentbar')) {
+        contentBar?.classList.toggle('hidden');
+      } else {
+        const target = btn.getAttribute('data-target');
+        if (target) openPanel(target);
       }
     });
   });
 
-  // Wire content bar icons
+  /* Content-bar icons */
   qsa('#pipe-content-bar .bar-icon').forEach(btn => {
-    const target = btn.getAttribute('data-target');
-    btn.addEventListener('click', () => target && openPanel(target));
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-target');
+      if (target) openPanel(target);
+    });
   });
 
-  // Close buttons + Esc
-  qsa('.panel .close-btn').forEach(btn => btn.addEventListener('click', () => {
-    const panel = btn.closest('.panel');
-    if (panel) closePanel(panel);
-  }));
+  /* Close buttons inside panels */
+  qsa('.panel .close-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.panel');
+      if (panel) closePanel(panel);
+    });
+  });
 
-  document.addEventListener('keydown', (e) => {
+  /* Escape key closes any open panel */
+  document.addEventListener('keydown', e => {
     if (e.key === 'Escape') qsa('.panel.open').forEach(closePanel);
   });
-});
 
-// === Layout sync: keep name label near bin corner ===
-document.addEventListener('DOMContentLoaded', () => {
-  const bin = document.getElementById('bin-main');
+
+  /* ── 4. Name label — tracks bin bottom-left corner ── */
+  const bin   = document.getElementById('bin-main');
   const label = document.getElementById('name-label');
-  function layout() {
+
+  function syncLabel() {
     if (!bin || !label) return;
     const r = bin.getBoundingClientRect();
-    const lpad = 6, bpad = 10;
-    label.style.left = `${Math.round(r.left + lpad)}px`;
-    label.style.top = `${Math.round(r.bottom - label.offsetHeight - bpad)}px`;
+    label.style.left = px(Math.round(r.left + 6));
+    label.style.top  = px(Math.round(r.bottom - label.offsetHeight - 10));
   }
-  layout();
-  window.addEventListener('resize', layout);
-  window.addEventListener('scroll', layout, { passive: true });
+
+  syncLabel();
+  window.addEventListener('resize', syncLabel);
+
+
+  /* ── 5. Misc init ───────────────────────────────── */
+
+  /* Auto copyright year */
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* Placeholder button (swap for real handler later) */
+  const mainBtn = document.getElementById('myButton');
+  if (mainBtn) mainBtn.addEventListener('click', () => alert('Button clicked!'));
+
 });
