@@ -51,6 +51,7 @@
       </button>
       <!-- White button toggles the content bar visibility -->
       <button class="circle-btn" id="btn-white" aria-label="Toggle content bar" data-toggle-contentbar="true">
+        <img src="image/lamp-shade.png" alt="" id="lamp-shade" />
         <img src="image/btn-white.png" alt="" />
       </button>
     </div>
@@ -82,7 +83,7 @@
       </div>
     </section>
 
-    <section class="panel panel-half" id="panel-blue" tabindex="-1" aria-labelledby="panel-blue-title" aria-hidden="true">
+    <section class="panel" id="panel-blue" tabindex="-1" aria-labelledby="panel-blue-title" aria-hidden="true">
       <header class="panel-header">
         <h2 id="panel-blue-title">Blue</h2>
         <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
@@ -90,7 +91,7 @@
       <div class="panel-body"><p>Blue panel placeholder.</p></div>
     </section>
 
-    <section class="panel panel-half" id="panel-yellow" tabindex="-1" aria-labelledby="panel-yellow-title" aria-hidden="true">
+    <section class="panel" id="panel-yellow" tabindex="-1" aria-labelledby="panel-yellow-title" aria-hidden="true">
       <header class="panel-header">
         <h2 id="panel-yellow-title">Yellow</h2>
         <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
@@ -98,7 +99,7 @@
       <div class="panel-body"><p>Yellow panel placeholder.</p></div>
     </section>
 
-    <section class="panel panel-half" id="panel-pink" tabindex="-1" aria-labelledby="panel-pink-title" aria-hidden="true">
+    <section class="panel" id="panel-pink" tabindex="-1" aria-labelledby="panel-pink-title" aria-hidden="true">
       <header class="panel-header">
         <h2 id="panel-pink-title">Pink</h2>
         <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
@@ -116,16 +117,20 @@
 
   <!-- Scene floor (single instance) -->
   <div id="scene-floor">
-    <img src="image/Pipe opening.png" alt="pipe opening" class="scene-prop" id="open-pipe-main" />
+    <img src="image/Pipe opening3-1.png.png" alt="pipe opening" class="scene-prop" id="open-pipe-main" />
     <img src="image/bin-1.png" alt="rubbish bin" class="scene-prop" id="bin-main" />
     <!-- Placeholder image bottom-left of bin — replace src with your own PNG later -->
     <img src="image/placeholder-bin-label.png" alt="placeholder" id="bin-placeholder" />
   </div>
 
   <!-- Torch darkness layer — darkens everything outside the beam -->
-  <div id="torch-darkness" aria-hidden="true"></div>
-  <!-- Warm torch beam — follows mouse via --mx/--my CSS vars -->
+  <div id="torch-darkness"      aria-hidden="true"></div>
   <div id="mouse-light-overlay" aria-hidden="true"></div>
+  <div id="lamp-glow"           aria-hidden="true"></div>
+  <div id="btn-white-orb"       aria-hidden="true"></div>
+  <!-- Two black shadow fins from the white button, at 45° and 135° -->
+  <!--div id="lamp-shadow-a"       aria-hidden="true"></div>
+  <div id="lamp-shadow-b"       aria-hidden="true"></div>-->
 
   <script>
     // Keep the copyright year current automatically

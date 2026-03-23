@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ive gone to grab a coffee will be back in a bit</title>
   <meta name="description" content="A short description of your page goes here."/>
+
+  <!-- Your styles -->
+  <!-- If you prefer your filename, change href to 'styles (3) savefile.css' -->
   <link rel="stylesheet" href="styles (3).css" />
+
   <style>
+    /* Keyboard users need to see where focus is */
     :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    /* Respect users who prefer less motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
 <body>
-
   <header>
     <h1 class="title">The alleyway</h1>
   </header>
@@ -29,86 +34,110 @@
     <div class="underline" aria-hidden="true"></div>
     <p>----content bar will go here</p>
     <button class="main-button" id="myButton" type="button">Button</button>
+
+    <!-- === CIRCLE BUTTONS LAYER (replaceable PNGs) === -->
+    <div id="circle-buttons" aria-hidden="false">
+      <button class="circle-btn" id="btn-red" aria-label="Open information panel" data-target="#panel-info">
+        <img src="image/btn-red.png" alt="" />
+      </button>
+      <button class="circle-btn" id="btn-blue" aria-label="Open blue panel" data-target="#panel-blue">
+        <img src="image/btn-blue.png" alt="" />
+      </button>
+      <button class="circle-btn" id="btn-yellow" aria-label="Open yellow panel" data-target="#panel-yellow">
+        <img src="image/btn-yellow.png" alt="" />
+      </button>
+      <button class="circle-btn" id="btn-pink" aria-label="Open pink panel" data-target="#panel-pink">
+        <img src="image/btn-pink.png" alt="" />
+      </button>
+      <!-- White button toggles the content bar visibility -->
+      <button class="circle-btn" id="btn-white" aria-label="Toggle content bar" data-toggle-contentbar="true">
+        <img src="image/lamp-shade.png" alt="" id="lamp-shade" />
+        <img src="image/btn-white.png" alt="" />
+      </button>
+    </div>
+
+    <!-- === VERTICAL CONTENT BAR — SHORTCUTS ALONG PIPE === -->
+    <nav id="pipe-content-bar" aria-label="Content bar">
+      <button class="bar-icon" data-target="#panel-info" aria-label="Info">
+        <img src="image/icon-info.png" alt="" />
+      </button>
+      <button class="bar-icon" data-target="#panel-blue" aria-label="Blue">
+        <img src="image/icon-blue.png" alt="" />
+      </button>
+      <button class="bar-icon" data-target="#panel-yellow" aria-label="Yellow">
+        <img src="image/icon-yellow.png" alt="" />
+      </button>
+      <button class="bar-icon" data-target="#panel-pink" aria-label="Pink">
+        <img src="image/icon-pink.png" alt="" />
+      </button>
+    </nav>
+
+    <!-- === PANELS / OVERLAYS === -->
+    <section class="panel panel-half" id="panel-info" tabindex="-1" aria-labelledby="panel-info-title" aria-hidden="true">
+      <header class="panel-header">
+        <h2 id="panel-info-title">Information</h2>
+        <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
+      </header>
+      <div class="panel-body">
+        <p>Placeholder info content. Replace later.</p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-blue" tabindex="-1" aria-labelledby="panel-blue-title" aria-hidden="true">
+      <header class="panel-header">
+        <h2 id="panel-blue-title">Blue</h2>
+        <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
+      </header>
+      <div class="panel-body"><p>Blue panel placeholder.</p></div>
+    </section>
+
+    <section class="panel" id="panel-yellow" tabindex="-1" aria-labelledby="panel-yellow-title" aria-hidden="true">
+      <header class="panel-header">
+        <h2 id="panel-yellow-title">Yellow</h2>
+        <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
+      </header>
+      <div class="panel-body"><p>Yellow panel placeholder.</p></div>
+    </section>
+
+    <section class="panel" id="panel-pink" tabindex="-1" aria-labelledby="panel-pink-title" aria-hidden="true">
+      <header class="panel-header">
+        <h2 id="panel-pink-title">Pink</h2>
+        <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
+      </header>
+      <div class="panel-body"><p>Pink panel placeholder.</p></div>
+    </section>
+
+    <!-- Name placeholder near bin -->
+    <div id="name-label" aria-label="name placeholder">Your Name</div>
   </main>
 
   <footer>
     <small>© <span id="year"></span> Your Name</small>
   </footer>
 
-  <!-- Circle buttons -->
-  <div id="circle-buttons">
-    <button class="circle-btn" id="btn-red"    aria-label="Open information panel" data-target="#panel-info">
-      <img src="image/btn-red.png" alt="" />
-    </button>
-    <button class="circle-btn" id="btn-blue"   aria-label="Open blue panel"   data-target="#panel-blue">
-      <img src="image/btn-blue.png" alt="" />
-    </button>
-    <button class="circle-btn" id="btn-yellow" aria-label="Open yellow panel" data-target="#panel-yellow">
-      <img src="image/btn-yellow.png" alt="" />
-    </button>
-    <button class="circle-btn" id="btn-pink"   aria-label="Open pink panel"   data-target="#panel-pink">
-      <img src="image/btn-pink.png" alt="" />
-    </button>
-    <button class="circle-btn" id="btn-white"  aria-label="Toggle content bar" data-toggle-contentbar="true">
-      <img src="image/btn-white.png" alt="" />
-    </button>
-  </div>
-
-  <!-- Vertical content bar -->
-  <nav id="pipe-content-bar" aria-label="Content bar">
-    <button class="bar-icon" data-target="#panel-info"   aria-label="Info">   <img src="image/icon-info.png"   alt="" /></button>
-    <button class="bar-icon" data-target="#panel-blue"   aria-label="Blue">   <img src="image/icon-blue.png"   alt="" /></button>
-    <button class="bar-icon" data-target="#panel-yellow" aria-label="Yellow"> <img src="image/icon-yellow.png" alt="" /></button>
-    <button class="bar-icon" data-target="#panel-pink"   aria-label="Pink">   <img src="image/icon-pink.png"   alt="" /></button>
-  </nav>
-
-  <!-- Panels -->
-  <section class="panel panel-half" id="panel-info"   tabindex="-1" aria-labelledby="panel-info-title"   aria-hidden="true">
-    <header class="panel-header">
-      <h2 id="panel-info-title">Information</h2>
-      <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
-    </header>
-    <div class="panel-body"><p>Placeholder info content. Replace later.</p></div>
-  </section>
-
-  <section class="panel" id="panel-blue"   tabindex="-1" aria-labelledby="panel-blue-title"   aria-hidden="true">
-    <header class="panel-header">
-      <h2 id="panel-blue-title">Blue</h2>
-      <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
-    </header>
-    <div class="panel-body"><p>Blue panel placeholder.</p></div>
-  </section>
-
-  <section class="panel" id="panel-yellow" tabindex="-1" aria-labelledby="panel-yellow-title" aria-hidden="true">
-    <header class="panel-header">
-      <h2 id="panel-yellow-title">Yellow</h2>
-      <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
-    </header>
-    <div class="panel-body"><p>Yellow panel placeholder.</p></div>
-  </section>
-
-  <section class="panel" id="panel-pink"   tabindex="-1" aria-labelledby="panel-pink-title"   aria-hidden="true">
-    <header class="panel-header">
-      <h2 id="panel-pink-title">Pink</h2>
-      <button class="close-btn" aria-label="Close"><img src="image/icon-close.png" alt="" /></button>
-    </header>
-    <div class="panel-body"><p>Pink panel placeholder.</p></div>
-  </section>
-
-  <!-- Name label -->
-  <div id="name-label" aria-label="name placeholder">Your Name</div>
-
-  <!-- Scene floor + props -->
+  <!-- Scene floor (single instance) -->
   <div id="scene-floor">
-    <img src="image/Pipe opening.png"          alt="pipe opening" class="scene-prop" id="open-pipe-main" />
-    <img src="image/bin-1.png"                 alt="rubbish bin"  class="scene-prop" id="bin-main" />
-    <img src="image/placeholder-bin-label.png" alt="placeholder"                     id="bin-placeholder" />
+    <img src="image/Pipe opening3-1.png.png" alt="pipe opening" class="scene-prop" id="open-pipe-main" />
+    <img src="image/bin-1.png" alt="rubbish bin" class="scene-prop" id="bin-main" />
+    <!-- Placeholder image bottom-left of bin — replace src with your own PNG later -->
+    <img src="image/placeholder-bin-label.png" alt="placeholder" id="bin-placeholder" />
   </div>
 
-  <!-- Torch overlays -->
+  <!-- Torch darkness layer — darkens everything outside the beam -->
   <div id="torch-darkness"      aria-hidden="true"></div>
   <div id="mouse-light-overlay" aria-hidden="true"></div>
+  <div id="lamp-glow"           aria-hidden="true"></div>
+  <div id="btn-white-orb"       aria-hidden="true"></div>
+  <!-- Two black shadow fins from the white button, at 45° and 135° -->
+  <!--div id="lamp-shadow-a"       aria-hidden="true"></div>
+  <div id="lamp-shadow-b"       aria-hidden="true"></div>-->
 
+  <script>
+    // Keep the copyright year current automatically
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <!-- Your scripts -->
   <script src="script (3).js"></script>
 </body>
 </html>
+``
