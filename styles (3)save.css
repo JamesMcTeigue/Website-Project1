@@ -325,22 +325,25 @@ body::before {
 }
 
 /* Positions use fixed px so they never shift with window size */
-
 /* ↓ BLUE button — adjust left/top to move, width/height on img to resize */
-#btn-blue        { left: 490px; top: 100px; }
-#btn-blue img    { width: 72px; height: 72px; }
+#btn-blue                       { left: 370px; top: 100px; }
+#circle-buttons #btn-blue img   { width: 272px;  height: 272px;  } 
+
+#btn-blue {
+  z-index: 70;
+}
 
 /* ↓ PINK button */
-#btn-pink        { left: 690px; top: 185px; }
-#btn-pink img    { width: 72px; height: 72px; }
+#btn-pink                       { left: 690px; top: 185px; }
+#circle-buttons #btn-pink img   { width: 72px;  height: 72px;  }
 
 /* ↓ RED button */
-#btn-red         { right: 450px; top: 300px; }
-#btn-red img     { width: 410px; height: 210px; }
+#btn-red                        { right: 450px; top: 200px; }
+#circle-buttons #btn-red img    { width: 150px; height: 150px; }
 
 /* ↓ YELLOW button */
-#btn-yellow      { left: 400px; top: 360px; }
-#btn-yellow img  { width: 72px; height: 72px; }
+#btn-yellow                     { left: 400px; top: 360px; }
+#circle-buttons #btn-yellow img { width: 72px;  height: 72px;  }
 
 /* White button — repositioned above the dumpster */
 #btn-white {
@@ -575,9 +578,33 @@ body::before {
 }
 
 /* ============================================================
+   11b2. WHITE BUTTON ORB  (z: 190 — same level as lamp-glow)
+   Soft full-circle glow centred on the white button.
+   Positioned as absolute child of #btn-white so it always
+   originates from the button — move the button, orb follows.
+   ============================================================ */
+#btn-white-orb {
+  position: absolute;
+  /* Centre on the button's own centre point */
+  left: 50%;
+  top:  50%;
+  transform: translate(60%, -115%);
+  width:  600px;
+  height: 600px;
+  pointer-events: none;
+  z-index: 190;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse  60px  60px at 50% 50%, rgba(255, 245, 210, 0.70), transparent 100%),
+    radial-gradient(ellipse 180px 180px at 50% 50%, rgba(255, 200,  80, 0.35), transparent 100%),
+    radial-gradient(ellipse 340px 340px at 50% 50%, rgba(255, 160,  30, 0.14), transparent 100%);
+  animation: cone-flicker 3.9s step-end infinite;
+}
+
+/* ============================================================
    11c. LAMP SHADOW FINS  (z: 220 — topmost, above orb)
    Two black rectangles pivoting from the button centre at
-   45° and 135°, creating hard shadow beams like a lamp shade.
+   25° and 155°, creating hard shadow beams like a lamp shade.
    Each is a very long thin bar rotated from the button centre.
    Button centre viewport coords: right=302px from right → left = calc(100vw - 302px)
                                   top=61px from top

@@ -38,3 +38,6 @@ chaged brightness of page and made light better
 
 ##19/03/2026
 made an attempt to make the wbesite uniform across screens, first and second attemps have failed moveing to third
+
+###23/03/2026
+changinout  the wihite button for a flickering lamp anf fixing lighting issuse around that. i also changes the red button for te start pfa poster
