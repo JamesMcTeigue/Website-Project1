@@ -344,7 +344,7 @@ body::before {
 
 /* ↓ YELLOW button */
 #btn-yellow                     { left: 400px; top: 360px; }
-#circle-buttons #btn-yellow img { width: 72px;  height: 72px;  }
+#circle-buttons #btn-yellow img { width: 172px;  height: 172px;  }
 
 /* White button — repositioned above the dumpster */
 #btn-white {
