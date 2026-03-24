@@ -143,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function openPanel(selector) {
     const panel = qs(selector);
     if (!panel) return;
+    /* Close any other open panels first */
+    qsa('.panel.open').forEach(p => { if (p !== panel) closePanel(p); });
     panel.classList.add('open');
     panel.setAttribute('aria-hidden', 'false');
     qs('.close-btn', panel)?.focus();
